@@ -1,0 +1,238 @@
+---
+title: voyage
+description: Default Voyage AI provider instance and methods
+---
+
+The default Voyage AI provider instance. This is a pre-configured instance created with `createVoyage()` that uses the `VOYAGE_API_KEY` environment variable.
+
+## Import
+
+```typescript
+import { voyage } from '@ai-sdk/voyage';
+```
+
+## Provider methods
+
+The Voyage provider supports multiple methods for creating different model types:
+
+### textEmbeddingModel()
+
+Creates a text embedding model for generating embeddings from text inputs.
+
+<ParamField path="modelId" type="VoyageEmbeddingModelId" required>
+  The ID of the text embedding model to use. Supported models include:
+  - `voyage-3.5` - Latest flagship model
+  - `voyage-3.5-lite` - Lighter version of 3.5
+  - `voyage-3-large` - Large context model
+  - `voyage-3` - Standard model
+  - `voyage-3-lite` - Lightweight model
+  - `voyage-code-3` - Code embeddings
+  - `voyage-finance-2` - Finance domain
+  - `voyage-multilingual-2` - Multilingual support
+  - `voyage-law-2` - Legal domain
+  - `voyage-code-2` - Code embeddings (older)
+  - Or any custom model ID string
+</ParamField>
+
+**Returns:** `EmbeddingModelV3` - A text embedding model instance
+
+#### Example
+
+```typescript
+import { voyage } from '@ai-sdk/voyage';
+import { embed, embedMany } from 'ai';
+
+const model = voyage.textEmbeddingModel('voyage-3-lite');
+
+const { embedding } = await embed({
+  model,
+  value: 'The quick brown fox jumps over the lazy dog',
+});
+
+const { embeddings } = await embedMany({
+  model,
+  values: [
+    'Artificial intelligence is transforming the world',
+    'Machine learning enables computers to learn',
+  ],
+});
+```
+
+### imageEmbeddingModel()
+
+Creates an image embedding model for generating embeddings from image inputs.
+
+<ParamField path="modelId" type="VoyageMultimodalEmbeddingModelId" required>
+  The ID of the multimodal embedding model to use. Supported models:
+  - `voyage-multimodal-3` - Multimodal model for images
+  - Or any custom model ID string
+</ParamField>
+
+**Returns:** `EmbeddingModelV3` - An image embedding model instance
+
+#### Example
+
+```typescript
+import { voyage } from '@ai-sdk/voyage';
+import { embedMany } from 'ai';
+
+const model = voyage.imageEmbeddingModel('voyage-multimodal-3');
+
+// Single image per embedding
+const { embeddings } = await embedMany({
+  model,
+  values: [
+    { image: 'https://example.com/image1.jpg' },
+    { image: 'https://example.com/image2.jpg' },
+  ],
+});
+
+// Multiple images in one embedding
+const result = await embedMany({
+  model,
+  values: [
+    {
+      image: [
+        'https://example.com/image1.jpg',
+        'https://example.com/image2.jpg',
+      ],
+    },
+  ],
+});
+```
+
+### multimodalEmbeddingModel()
+
+Creates a multimodal embedding model for generating embeddings from combined text and image inputs.
+
+<ParamField path="modelId" type="VoyageMultimodalEmbeddingModelId" required>
+  The ID of the multimodal embedding model to use. Supported models:
+  - `voyage-multimodal-3` - Multimodal model for text and images
+  - Or any custom model ID string
+</ParamField>
+
+**Returns:** `EmbeddingModelV3` - A multimodal embedding model instance
+
+#### Example
+
+```typescript
+import { voyage } from '@ai-sdk/voyage';
+import { embed, embedMany } from 'ai';
+
+const model = voyage.multimodalEmbeddingModel('voyage-multimodal-3');
+
+// Text and image combination
+const { embedding } = await embed({
+  model,
+  value: {
+    text: ['A beautiful sunset over the beach'],
+    image: ['https://example.com/beach.jpg'],
+  },
+});
+
+// Multiple text-image combinations
+const { embeddings } = await embedMany({
+  model,
+  values: [
+    {
+      text: ['Golden sunset over ocean waves'],
+      image: ['https://example.com/beach1.jpg'],
+    },
+    {
+      text: ['Vibrant sunset over tropical beach'],
+      image: ['https://example.com/beach2.jpg'],
+    },
+  ],
+});
+
+// Text only with multimodal model
+const textOnly = await embedMany({
+  model,
+  values: [
+    'Customer service inquiry',
+    'Technical support request',
+  ],
+});
+
+// Grouped text inputs
+const grouped = await embedMany({
+  model,
+  values: [
+    [
+      'Premium Wireless Bluetooth Headphones',
+      'Experience superior sound quality',
+      'Battery life: 30 hours',
+    ],
+  ],
+});
+```
+
+### reranking()
+
+Creates a reranking model for reordering documents based on relevance to a query.
+
+<ParamField path="modelId" type="VoyageRerankingModelId" required>
+  The ID of the reranking model to use. Supported models:
+  - `rerank-2.5` - Latest reranking model
+  - `rerank-2.5-lite` - Lighter version of 2.5
+  - `rerank-2` - Standard reranking model
+  - `rerank-lite-2` - Lightweight version of 2
+  - `rerank-1` - First generation model
+  - `rerank-lite-1` - Lightweight version of 1
+  - Or any custom model ID string
+</ParamField>
+
+**Returns:** `RerankingModelV3` - A reranking model instance
+
+#### Example
+
+```typescript
+import { voyage } from '@ai-sdk/voyage';
+import { rerank } from 'ai';
+
+const model = voyage.reranking('rerank-2.5');
+
+const { ranking } = await rerank({
+  model,
+  query: 'talk about rain',
+  documents: [
+    'sunny day at the beach',
+    'rainy day in the city',
+  ],
+  topN: 1,
+  providerOptions: {
+    voyage: {
+      returnDocuments: true,
+      truncation: true,
+    },
+  },
+});
+```
+
+### rerankingModel()
+
+Alias for `reranking()`. Creates a reranking model with identical functionality.
+
+<ParamField path="modelId" type="VoyageRerankingModelId" required>
+  The ID of the reranking model to use.
+</ParamField>
+
+**Returns:** `RerankingModelV3` - A reranking model instance
+
+## Calling as a function
+
+The provider instance can be called directly as a function, which is equivalent to calling `textEmbeddingModel()`.
+
+```typescript
+import { voyage } from '@ai-sdk/voyage';
+import { embed } from 'ai';
+
+// These are equivalent
+const model1 = voyage('voyage-3-lite');
+const model2 = voyage.textEmbeddingModel('voyage-3-lite');
+
+const { embedding } = await embed({
+  model: model1,
+  value: 'Hello world',
+});
+```

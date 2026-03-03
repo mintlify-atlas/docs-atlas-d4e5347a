@@ -1,0 +1,152 @@
+---
+title: Text embedding models
+description: Learn about Voyage AI's text embedding models and their specifications
+---
+
+Voyage AI provides a range of text embedding models optimized for different use cases, from general-purpose retrieval to specialized domains like code, finance, and law.
+
+## Available models
+
+You can use any of the following text embedding models with the Voyage AI provider:
+
+| Model | Context length | Embedding dimensions | Model ID |
+| --- | --- | --- | --- |
+| Voyage 3.5 | 32,000 tokens | 256, 512, 1024 (default), 2048 | `voyage-3.5` |
+| Voyage 3.5 Lite | 32,000 tokens | 256, 512, 1024 (default), 2048 | `voyage-3.5-lite` |
+| Voyage 3 Large | 32,000 tokens | 256, 512, 1024 (default), 2048 | `voyage-3-large` |
+| Voyage 3 | 32,000 tokens | 1024 | `voyage-3` |
+| Voyage 3 Lite | 32,000 tokens | 512 | `voyage-3-lite` |
+| Voyage Code 3 | 32,000 tokens | 256, 512, 1024 (default), 2048 | `voyage-code-3` |
+| Voyage Finance 2 | 32,000 tokens | 1024 | `voyage-finance-2` |
+| Voyage Multilingual 2 | 32,000 tokens | 1024 | `voyage-multilingual-2` |
+| Voyage Law 2 | 16,000 tokens | 1024 | `voyage-law-2` |
+| Voyage Code 2 | 16,000 tokens | 1536 | `voyage-code-2` |
+
+<Warning>
+Older models (voyage-large-2-instruct, voyage-large-2, voyage-2, voyage-02, voyage-01, voyage-lite-01) are deprecated and will be removed in the future. Use the latest models instead.
+</Warning>
+
+## Usage example
+
+You can create a text embedding model using the `voyage.textEmbeddingModel()` method:
+
+```typescript
+import { voyage } from 'voyage-ai-provider';
+import { embedMany } from 'ai';
+
+const embeddingModel = voyage.textEmbeddingModel('voyage-3-lite');
+
+const { embeddings } = await embedMany({
+  model: embeddingModel,
+  values: [
+    'Implement a binary search algorithm',
+    'Create a REST API endpoint',
+  ],
+});
+```
+
+## Model settings
+
+You can customize model behavior by passing settings as the second argument:
+
+```typescript
+const embeddingModel = voyage.textEmbeddingModel('voyage-3-lite', {
+  inputType: 'document',
+  outputDimension: 1024,
+  outputDtype: 'float',
+  truncation: true,
+});
+```
+
+### Available settings
+
+<ParamField path="inputType" type="'query' | 'document'" default="query">
+  The input type for the embeddings. Use `query` for search queries and `document` for documents being indexed.
+  
+  - For `query`: The prompt "Represent the query for retrieving supporting documents: " is prepended
+  - For `document`: The prompt "Represent the document for retrieval: " is prepended
+</ParamField>
+
+<ParamField path="outputDimension" type="number">
+  The number of dimensions for the resulting output embeddings. If not specified, uses the model's default dimension.
+  
+  Models like `voyage-3.5`, `voyage-3.5-lite`, `voyage-3-large`, and `voyage-code-3` support: 256, 512, 1024 (default), and 2048.
+</ParamField>
+
+<ParamField path="outputDtype" type="'float' | 'int8' | 'uint8' | 'binary' | 'ubinary'" default="float">
+  The data type for the resulting output embeddings.
+  
+  - `float`: 32-bit single-precision floating-point numbers (supported by all models)
+  - `int8`: 8-bit integers ranging from -128 to 127
+  - `uint8`: 8-bit integers ranging from 0 to 255
+  - `binary`: Bit-packed quantized single-bit values using int8
+  - `ubinary`: Bit-packed quantized single-bit values using uint8
+  
+  <Note>
+  The `int8`, `uint8`, `binary`, and `ubinary` types are currently only supported by `voyage-code-3`.
+  </Note>
+</ParamField>
+
+<ParamField path="truncation" type="boolean">
+  Whether to truncate the input texts to fit within the context length. When enabled, long inputs are automatically truncated to the model's maximum context length.
+</ParamField>
+
+## Choosing the right model
+
+### General-purpose tasks
+
+- **voyage-3.5**: Best overall performance for general retrieval tasks with flexible dimensions
+- **voyage-3.5-lite**: Faster inference with similar quality to voyage-3.5
+- **voyage-3-large**: High-quality embeddings for demanding retrieval applications
+- **voyage-3**: Balanced performance for standard use cases
+- **voyage-3-lite**: Lightweight option for cost-sensitive applications
+
+### Specialized domains
+
+- **voyage-code-3**: Optimized for code search, code similarity, and technical documentation
+- **voyage-finance-2**: Fine-tuned for financial documents and terminology
+- **voyage-multilingual-2**: Supports multiple languages for cross-lingual retrieval
+- **voyage-law-2**: Specialized for legal documents and terminology
+- **voyage-code-2**: Earlier code-specialized model (consider upgrading to voyage-code-3)
+
+<Tip>
+For code-related tasks, use `voyage-code-3` with the appropriate `outputDimension` based on your accuracy vs. speed requirements. Higher dimensions generally provide better accuracy at the cost of storage and computation.
+</Tip>
+
+## Advanced features
+
+### Variable output dimensions
+
+For models that support multiple output dimensions (voyage-3.5, voyage-3.5-lite, voyage-3-large, voyage-code-3), you can trade off between accuracy and efficiency:
+
+```typescript
+// Higher accuracy, larger storage
+const highAccuracy = voyage.textEmbeddingModel('voyage-code-3', {
+  outputDimension: 2048,
+});
+
+// Balanced
+const balanced = voyage.textEmbeddingModel('voyage-code-3', {
+  outputDimension: 1024,
+});
+
+// Faster, smaller storage
+const efficient = voyage.textEmbeddingModel('voyage-code-3', {
+  outputDimension: 256,
+});
+```
+
+### Quantization
+
+For applications requiring extreme efficiency, you can use quantized embeddings with `voyage-code-3`:
+
+```typescript
+const quantizedModel = voyage.textEmbeddingModel('voyage-code-3', {
+  outputDtype: 'int8', // 4x smaller than float
+  outputDimension: 1024,
+});
+```
+
+<Note>
+Quantization reduces storage and memory requirements but may slightly impact retrieval accuracy. Test your specific use case to ensure acceptable performance.
+</Note>

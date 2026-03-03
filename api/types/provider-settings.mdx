@@ -1,0 +1,68 @@
+---
+title: VoyageProviderSettings
+description: Configuration options for the Voyage AI provider instance
+---
+
+The `VoyageProviderSettings` interface defines the configuration options you can pass when creating a Voyage AI provider instance using `createVoyage()`.
+
+## Properties
+
+<ParamField path="baseURL" type="string" optional>
+  Use a different URL prefix for API calls, e.g. to use proxy servers.
+  
+  **Default:** `https://api.voyageai.com/v1`
+  
+  See [Voyage AI API Reference](https://docs.voyageai.com/reference)
+</ParamField>
+
+<ParamField path="apiKey" type="string" optional>
+  API key that is sent using the `Authorization` header.
+  
+  **Default:** Value from the `VOYAGE_API_KEY` environment variable
+</ParamField>
+
+<ParamField path="headers" type="Record<string, string>" optional>
+  Custom headers to include in the requests.
+</ParamField>
+
+<ParamField path="fetch" type="FetchFunction" optional>
+  Custom fetch implementation. You can use it as a middleware to intercept requests, or to provide a custom fetch implementation for testing.
+</ParamField>
+
+## Usage
+
+```typescript
+import { createVoyage } from '@voyageai/ai-provider';
+
+const voyage = createVoyage({
+  apiKey: 'your-api-key',
+  baseURL: 'https://custom-proxy.example.com/v1',
+  headers: {
+    'Custom-Header': 'value',
+  },
+});
+```
+
+### Using a custom fetch function
+
+```typescript
+import { createVoyage } from '@voyageai/ai-provider';
+
+const voyage = createVoyage({
+  fetch: async (url, init) => {
+    console.log('Making request to:', url);
+    const response = await fetch(url, init);
+    console.log('Response status:', response.status);
+    return response;
+  },
+});
+```
+
+### Using environment variables
+
+```typescript
+import { createVoyage } from '@voyageai/ai-provider';
+
+// Automatically uses VOYAGE_API_KEY from environment
+const voyage = createVoyage();
+```

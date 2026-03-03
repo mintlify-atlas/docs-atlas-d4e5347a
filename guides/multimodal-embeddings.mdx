@@ -1,0 +1,536 @@
+---
+title: Multimodal embeddings
+description: Learn how to generate embeddings from combined text and image content using Voyage AI
+---
+
+Multimodal embeddings allow you to create unified vector representations from text and images together. This enables powerful cross-modal search, where you can find images using text queries or vice versa.
+
+## Overview
+
+Voyage AI's `voyage-multimodal-3` model supports creating embeddings from:
+- Text only
+- Images only
+- Text and images combined
+- Multiple texts and/or images in one embedding
+
+<Note>
+Multimodal embeddings create a shared semantic space where text and images with similar meanings have similar vector representations.
+</Note>
+
+## Basic usage
+
+Create an embedding from text and image combined:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embed } from 'ai';
+import type { MultimodalEmbeddingInput } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const { embedding } = await embed<MultimodalEmbeddingInput>({
+  model: voyage.multimodalEmbeddingModel('voyage-multimodal-3'),
+  value: {
+    text: ['A beautiful sunset over the beach'],
+    image: ['https://i.ibb.co/r5w8hG8/beach2.jpg'],
+  },
+});
+
+console.log(`Generated ${embedding.length} dimensional embedding`);
+```
+
+## Input formats
+
+The multimodal model accepts several input formats for maximum flexibility:
+
+<Tabs items={['Combined', 'Text Only', 'Image Only']}>
+
+<Tab value="Combined">
+
+### Text and image together
+
+Combine textual descriptions with visual content:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embedMany } from 'ai';
+import type { MultimodalEmbeddingInput } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const { embeddings } = await embedMany<MultimodalEmbeddingInput>({
+  model: voyage.multimodalEmbeddingModel('voyage-multimodal-3'),
+  values: [
+    {
+      text: ['A beautiful sunset over the beach'],
+      image: ['https://i.ibb.co/r5w8hG8/beach2.jpg'],
+    },
+  ],
+});
+```
+
+</Tab>
+
+<Tab value="Text Only">
+
+### Text-only embeddings
+
+You can use the multimodal model for text alone:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embedMany } from 'ai';
+import type { MultimodalEmbeddingInput } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const { embeddings } = await embedMany<MultimodalEmbeddingInput>({
+  model: voyage.multimodalEmbeddingModel('voyage-multimodal-3'),
+  values: [
+    'Customer service inquiry about product return',
+    'Technical support request for software installation',
+    'Sales question about pricing and availability',
+  ],
+});
+```
+
+</Tab>
+
+<Tab value="Image Only">
+
+### Image-only embeddings
+
+Generate embeddings from images without text:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embedMany } from 'ai';
+import type { MultimodalEmbeddingInput } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const { embeddings } = await embedMany<MultimodalEmbeddingInput>({
+  model: voyage.multimodalEmbeddingModel('voyage-multimodal-3'),
+  values: [
+    'https://i.ibb.co/nQNGqL0/beach1.jpg',
+    'https://i.ibb.co/r5w8hG8/beach2.jpg',
+  ],
+});
+```
+
+</Tab>
+
+</Tabs>
+
+## Multiple items per embedding
+
+Combine multiple text segments and images into a single embedding:
+
+<Steps>
+
+### Single text with multiple images
+
+Pair descriptive text with several related images:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embedMany } from 'ai';
+import type { MultimodalEmbeddingInput } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const { embeddings } = await embedMany<MultimodalEmbeddingInput>({
+  model: voyage.multimodalEmbeddingModel('voyage-multimodal-3'),
+  values: [
+    {
+      text: ['A beautiful sunset over the beach'],
+      image: [
+        'https://i.ibb.co/nQNGqL0/beach1.jpg',
+        'https://i.ibb.co/r5w8hG8/beach2.jpg',
+      ],
+    },
+  ],
+});
+
+console.log('Generated embedding from 1 text + 2 images');
+```
+
+### Rich content with comprehensive data
+
+Create detailed embeddings with both modalities:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embedMany } from 'ai';
+import type { MultimodalEmbeddingInput } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const { embeddings } = await embedMany<MultimodalEmbeddingInput>({
+  model: voyage.multimodalEmbeddingModel('voyage-multimodal-3'),
+  values: [
+    {
+      text: ['Golden sunset over ocean waves on sandy beach.'],
+      image: ['https://i.ibb.co/nQNGqL0/beach1.jpg'],
+    },
+    {
+      text: ['Vibrant sunset over tropical beach and ocean.'],
+      image: ['https://i.ibb.co/r5w8hG8/beach2.jpg'],
+    },
+  ],
+});
+
+for (const [index, embedding] of embeddings.entries()) {
+  console.log(`Embedding ${index + 1}: ${embedding.length} dimensions`);
+}
+```
+
+</Steps>
+
+## Grouped text embeddings
+
+The multimodal model also supports grouping multiple text segments:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embedMany } from 'ai';
+import type { TextEmbeddingInput } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const { embeddings } = await embedMany<TextEmbeddingInput>({
+  model: voyage.multimodalEmbeddingModel('voyage-multimodal-3'),
+  values: [
+    // E-commerce product: title + description + features
+    [
+      'Premium Wireless Bluetooth Headphones',
+      'Experience superior sound quality with active noise cancellation',
+      'Battery life: 30 hours, Quick charge: 15 min = 3 hours playback',
+      'Compatible with iOS, Android, and all Bluetooth devices',
+    ],
+    // Blog post: title + summary + tags
+    [
+      'The Future of Artificial Intelligence in Healthcare',
+      'Exploring how AI is revolutionizing medical diagnosis and treatment',
+      'Tags: AI, healthcare, machine learning, medical technology, innovation',
+    ],
+  ],
+});
+```
+
+<Tip>
+Grouping related content creates richer semantic representations than embedding items separately.
+</Tip>
+
+## Configuration options
+
+Customize multimodal embedding behavior:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embed } from 'ai';
+import type { MultimodalEmbeddingInput, VoyageMultimodalEmbeddingOptions } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const { embedding } = await embed<MultimodalEmbeddingInput>({
+  model: voyage.multimodalEmbeddingModel('voyage-multimodal-3'),
+  value: {
+    text: ['Product description'],
+    image: ['https://example.com/product.jpg'],
+  },
+  providerOptions: {
+    voyage: {
+      inputType: 'document',
+      truncation: true,
+    } satisfies VoyageMultimodalEmbeddingOptions,
+  },
+});
+```
+
+### Available options
+
+<Accordion title="inputType">
+
+Type of the input. Defaults to `"query"`.
+
+When specified, Voyage automatically prepends a prompt to optimize for retrieval/search:
+- `query` - "Represent the query for retrieving supporting documents: "
+- `document` - "Represent the document for retrieval: "
+
+Since inputs can be multimodal, both queries and documents can contain text, images, or both.
+
+</Accordion>
+
+<Accordion title="outputEncoding">
+
+The data type for output embeddings. Defaults to `null`.
+
+- `null` (default) - Embeddings as a list of floating-point numbers
+- `base64` - Base64-encoded NumPy array of single-precision floats
+
+See [output data types FAQ](https://docs.voyageai.com/docs/faq#what-is-quantization-and-output-data-types) for details.
+
+</Accordion>
+
+<Accordion title="truncation">
+
+Whether to truncate inputs to fit within the context length. Defaults to `true`.
+
+When `true`, long inputs are automatically truncated. When `false`, an error is raised if inputs exceed limits.
+
+</Accordion>
+
+## Use cases
+
+<CardGroup cols={2}>
+  <Card title="Cross-modal search" icon="magnifying-glass">
+    Search images using text queries or find text with images
+  </Card>
+  <Card title="E-commerce" icon="shopping-cart">
+    Match products with descriptions and images
+  </Card>
+  <Card title="Content management" icon="folder">
+    Organize documents containing text and visuals
+  </Card>
+  <Card title="Visual Q&A" icon="comment-question">
+    Answer questions about image content
+  </Card>
+</CardGroup>
+
+## Cross-modal retrieval
+
+One of the most powerful features is searching across modalities:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embed, embedMany } from 'ai';
+import type { MultimodalEmbeddingInput, VoyageMultimodalEmbeddingOptions } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const model = voyage.multimodalEmbeddingModel('voyage-multimodal-3');
+
+// Index documents with images
+const { embeddings: documents } = await embedMany<MultimodalEmbeddingInput>({
+  model,
+  values: [
+    {
+      text: ['Golden sunset over ocean waves'],
+      image: ['https://i.ibb.co/nQNGqL0/beach1.jpg'],
+    },
+    {
+      text: ['Vibrant tropical beach sunset'],
+      image: ['https://i.ibb.co/r5w8hG8/beach2.jpg'],
+    },
+  ],
+  providerOptions: {
+    voyage: {
+      inputType: 'document',
+    } satisfies VoyageMultimodalEmbeddingOptions,
+  },
+});
+
+// Search using text query
+const { embedding: query } = await embed<MultimodalEmbeddingInput>({
+  model,
+  value: 'beach at sunset',
+  providerOptions: {
+    voyage: {
+      inputType: 'query',
+    } satisfies VoyageMultimodalEmbeddingOptions,
+  },
+});
+
+// Calculate similarities
+function cosineSimilarity(a: number[], b: number[]): number {
+  const dotProduct = a.reduce((sum, val, i) => sum + val * b[i], 0);
+  const magnitudeA = Math.sqrt(a.reduce((sum, val) => sum + val * val, 0));
+  const magnitudeB = Math.sqrt(b.reduce((sum, val) => sum + val * val, 0));
+  return dotProduct / (magnitudeA * magnitudeB);
+}
+
+const similarities = documents.map(doc => cosineSimilarity(query, doc));
+console.log('Document similarities:', similarities);
+```
+
+<Tip>
+Use `inputType: 'query'` for search queries and `inputType: 'document'` for indexed content to optimize retrieval performance.
+</Tip>
+
+## Working with base64 images
+
+Convert and embed images from various sources:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embed } from 'ai';
+import type { MultimodalEmbeddingInput } from '@ai-sdk/voyage';
+
+// Helper to convert image URL to base64
+const getBase64Image = async (url: string) => {
+  const response = await fetch(url);
+  const arrayBuffer = await response.arrayBuffer();
+  const base64 = Buffer.from(arrayBuffer).toString('base64');
+  return `data:image/jpeg;base64,${base64}`;
+};
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const { embedding } = await embed<MultimodalEmbeddingInput>({
+  model: voyage.multimodalEmbeddingModel('voyage-multimodal-3'),
+  value: {
+    text: ['Beach scene at sunset'],
+    image: [await getBase64Image('https://i.ibb.co/r5w8hG8/beach2.jpg')],
+  },
+});
+
+console.log('Embedded base64 image with text');
+```
+
+## Usage tracking
+
+Multimodal embeddings track both text and image token usage:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embedMany } from 'ai';
+import type { MultimodalEmbeddingInput } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const result = await embedMany<MultimodalEmbeddingInput>({
+  model: voyage.multimodalEmbeddingModel('voyage-multimodal-3'),
+  values: [
+    {
+      text: ['Description of the image'],
+      image: ['https://i.ibb.co/nQNGqL0/beach1.jpg'],
+    },
+  ],
+});
+
+console.log(`Generated ${result.embeddings.length} embeddings`);
+console.log(`Total tokens: ${result.usage?.tokens}`);
+```
+
+<Note>
+Total tokens include both text tokens and image pixels converted to token equivalents.
+</Note>
+
+## Error handling
+
+Handle errors gracefully with multimodal inputs:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embed } from 'ai';
+import type { MultimodalEmbeddingInput } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+try {
+  const { embedding } = await embed<MultimodalEmbeddingInput>({
+    model: voyage.multimodalEmbeddingModel('voyage-multimodal-3'),
+    value: {
+      text: ['Product information'],
+      image: ['https://example.com/product.jpg'],
+    },
+  });
+  
+  console.log('Multimodal embedding generated');
+} catch (error) {
+  console.error('Failed to generate embedding:', error);
+}
+```
+
+<Warning>
+The maximum batch size is 128 embeddings per call. Split larger batches into multiple requests.
+</Warning>
+
+## Best practices
+
+<Steps>
+
+### Combine related content
+
+Group text and images that belong together (e.g., product titles with product images) for more meaningful embeddings.
+
+### Use appropriate input types
+
+Set `inputType: 'query'` for search queries and `inputType: 'document'` for indexed content to optimize retrieval.
+
+### Batch when possible
+
+Process multiple multimodal inputs together using `embedMany` for better efficiency.
+
+### Balance modalities
+
+Ensure text descriptions complement images rather than duplicate information, creating richer semantic representations.
+
+</Steps>
+
+## Model selection
+
+Choose the right model method based on your input:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+// For text only - use textEmbeddingModel for better performance
+const textModel = voyage.textEmbeddingModel('voyage-3-lite');
+
+// For images only - use imageEmbeddingModel
+const imageModel = voyage.imageEmbeddingModel('voyage-multimodal-3');
+
+// For text + images or flexible inputs - use multimodalEmbeddingModel
+const multimodalModel = voyage.multimodalEmbeddingModel('voyage-multimodal-3');
+```
+
+<Note>
+All three methods can use the same underlying model, but they're optimized for different input patterns.
+</Note>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Text embeddings" icon="font" href="/guides/text-embeddings">
+    Learn about text-only embedding models
+  </Card>
+  <Card title="Image embeddings" icon="image" href="/guides/image-embeddings">
+    Generate embeddings from images
+  </Card>
+  <Card title="Reranking" icon="arrow-down-wide-short" href="/guides/reranking">
+    Improve search results with reranking
+  </Card>
+  <Card title="Configuration" icon="gear" href="/guides/configuration">
+    Customize provider settings
+  </Card>
+</CardGroup>

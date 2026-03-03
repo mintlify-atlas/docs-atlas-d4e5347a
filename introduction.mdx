@@ -1,0 +1,65 @@
+---
+title: Voyage AI Provider
+description: Generate embeddings and rerank documents with Voyage AI models using the Vercel AI SDK
+---
+
+# Voyage AI Provider
+
+The Voyage AI Provider brings powerful embedding and reranking capabilities to the Vercel AI SDK. Generate high-quality text and multimodal embeddings, or improve your search results with state-of-the-art reranking models.
+
+## Why use Voyage AI Provider?
+
+Voyage AI offers specialized embedding models optimized for different use cases:
+
+- **Domain-specific models** - Choose from specialized models for code, finance, law, and multilingual content
+- **Multimodal capabilities** - Generate embeddings from text, images, or both combined
+- **Flexible dimensions** - Select output dimensions (256, 512, 1024, or 2048) to balance quality and performance
+- **Advanced reranking** - Improve search relevance with dedicated reranking models
+- **Large context windows** - Process up to 32,000 tokens in a single request
+
+## Key features
+
+<CardGroup cols={2}>
+  <Card title="Text embeddings" icon="align-left">
+    Generate embeddings for text with specialized models for different domains like code, finance, and law
+  </Card>
+  <Card title="Image embeddings" icon="image">
+    Create embeddings from images for visual search and similarity matching
+  </Card>
+  <Card title="Multimodal embeddings" icon="layer-group">
+    Combine text and images into unified embeddings for rich content understanding
+  </Card>
+  <Card title="Reranking" icon="arrow-down-wide-short">
+    Reorder search results by relevance to improve search quality
+  </Card>
+</CardGroup>
+
+## Get started
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="bolt" href="/quickstart">
+    Generate your first embeddings in minutes
+  </Card>
+  <Card title="Installation" icon="download" href="/installation">
+    Install the provider with your preferred package manager
+  </Card>
+  <Card title="Text embeddings" icon="align-left" href="/guides/text-embeddings">
+    Learn how to generate text embeddings
+  </Card>
+  <Card title="API reference" icon="code" href="/api/provider/create-voyage">
+    Explore available models and configuration options
+  </Card>
+</CardGroup>
+
+## Available models
+
+Voyage AI offers multiple embedding model families:
+
+- **voyage-3.5** series - Latest models with flexible output dimensions
+- **voyage-code-3** - Optimized for code understanding and search
+- **voyage-finance-2** - Specialized for financial documents and analysis
+- **voyage-law-2** - Tuned for legal text processing
+- **voyage-multilingual-2** - Supports 100+ languages
+- **voyage-multimodal-3** - Handles text and images together
+
+For reranking, use the **rerank-2.5** series for best performance with context windows up to 32,000 tokens.

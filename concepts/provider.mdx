@@ -1,0 +1,183 @@
+---
+title: Provider pattern
+description: Learn how the VoyageProvider works and how to configure it
+---
+
+The Voyage AI provider follows the Vercel AI SDK provider pattern, giving you a consistent interface for generating embeddings and reranking documents.
+
+## What is a provider?
+
+A provider is a factory that creates model instances. The Voyage provider implements the `ProviderV3` interface from the AI SDK, which means it integrates seamlessly with the rest of the AI SDK ecosystem.
+
+When you create a provider instance, you configure shared settings like API keys and base URLs. Then you use that provider to create individual model instances.
+
+## Creating a provider
+
+You can use the default provider instance or create a custom one:
+
+```typescript
+import { voyage, createVoyage } from '@ai-sdk/voyage';
+
+// Use the default provider
+const embedding = voyage('voyage-3');
+
+// Or create a custom provider with specific settings
+const customVoyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+  baseURL: 'https://api.voyageai.com/v1',
+});
+
+const embedding = customVoyage('voyage-3');
+```
+
+## Provider settings
+
+The `VoyageProviderSettings` interface defines the configuration options:
+
+```typescript
+interface VoyageProviderSettings {
+  /**
+   * API key for authentication. Defaults to VOYAGE_API_KEY environment variable.
+   */
+  apiKey?: string;
+
+  /**
+   * Base URL for API calls. Defaults to https://api.voyageai.com/v1
+   * Use this to configure proxy servers.
+   */
+  baseURL?: string;
+
+  /**
+   * Custom headers to include in requests.
+   */
+  headers?: Record<string, string>;
+
+  /**
+   * Custom fetch implementation for middleware or testing.
+   */
+  fetch?: FetchFunction;
+}
+```
+
+<Note>
+The provider automatically reads your API key from the `VOYAGE_API_KEY` environment variable if you don't provide one explicitly.
+</Note>
+
+## Provider methods
+
+The `VoyageProvider` interface extends `ProviderV3` and provides several methods for creating models:
+
+### Text embeddings
+
+Create text embedding models using either the call syntax or the explicit method:
+
+```typescript
+// Shorthand syntax
+const model = voyage('voyage-3');
+
+// Explicit method
+const model = voyage.textEmbeddingModel('voyage-3');
+```
+
+Both approaches create the same `EmbeddingModelV3` instance.
+
+### Image embeddings
+
+Create models for embedding images:
+
+```typescript
+const model = voyage.imageEmbeddingModel('voyage-multimodal-3');
+```
+
+### Multimodal embeddings
+
+Create models that can embed both text and images:
+
+```typescript
+const model = voyage.multimodalEmbeddingModel('voyage-multimodal-3');
+```
+
+### Reranking
+
+Create reranking models using either method name:
+
+```typescript
+// Using reranking method
+const reranker = voyage.reranking('rerank-2');
+
+// Using rerankingModel method (same result)
+const reranker = voyage.rerankingModel('rerank-2');
+```
+
+Both methods create the same `RerankingModelV3` instance.
+
+<Info>
+The provider uses factory methods to create model instances. Each model instance is configured with the provider's shared settings (API key, base URL, headers, etc.).
+</Info>
+
+## Implementation details
+
+The provider is implemented as a function with additional methods attached. When you call it directly, it creates a text embedding model:
+
+```typescript
+interface VoyageProvider extends ProviderV3 {
+  // Call signature creates text embeddings
+  (modelId: VoyageEmbeddingModelId): EmbeddingModelV3;
+
+  textEmbeddingModel: (modelId: VoyageEmbeddingModelId) => EmbeddingModelV3;
+  imageEmbeddingModel: (modelId: VoyageMultimodalEmbeddingModelId) => EmbeddingModelV3;
+  multimodalEmbeddingModel: (modelId: VoyageMultimodalEmbeddingModelId) => EmbeddingModelV3;
+  reranking: (modelId: VoyageRerankingModelId) => RerankingModelV3;
+  rerankingModel: (modelId: VoyageRerankingModelId) => RerankingModelV3;
+}
+```
+
+<Tip>
+Don't use the `new` keyword with the provider function. It will throw an error if you try to call it as a constructor.
+</Tip>
+
+## Custom configurations
+
+You can customize the provider for different use cases:
+
+### Using a proxy server
+
+```typescript
+const voyage = createVoyage({
+  baseURL: 'https://my-proxy.example.com/voyage',
+});
+```
+
+### Adding custom headers
+
+```typescript
+const voyage = createVoyage({
+  headers: {
+    'X-Custom-Header': 'value',
+  },
+});
+```
+
+### Custom fetch middleware
+
+```typescript
+const voyage = createVoyage({
+  fetch: async (url, options) => {
+    console.log('Request:', url);
+    const response = await fetch(url, options);
+    console.log('Response:', response.status);
+    return response;
+  },
+});
+```
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Embeddings" icon="vector-square" href="/concepts/embeddings">
+    Learn how embeddings work and how to generate them
+  </Card>
+  <Card title="Reranking" icon="arrows-up-down" href="/concepts/reranking">
+    Learn how reranking works and how to use it
+  </Card>
+</CardGroup>

@@ -1,0 +1,241 @@
+---
+title: Multimodal embedding models
+description: Learn about Voyage AI's multimodal embedding models for text and image understanding
+---
+
+Voyage AI's multimodal embedding models can process both text and images, enabling powerful cross-modal retrieval and similarity search applications.
+
+## Available models
+
+| Model | Context length | Embedding dimensions | Model ID |
+| --- | --- | --- | --- |
+| Voyage Multimodal 3 | 32,000 tokens | 1024 | `voyage-multimodal-3` |
+
+<Note>
+With the multimodal model, images are counted as tokens using a rate of approximately 560 pixels per token. Each input must not exceed 32,000 tokens, and the total across all inputs must not exceed 320,000 tokens.
+</Note>
+
+## Image constraints
+
+When working with images, keep these limits in mind:
+
+- Maximum 1,000 values per request
+- Maximum 16 million pixels per image
+- Maximum 20 MB per image
+- Supported formats: PNG, JPEG, WebP, GIF
+- Images must be provided as URLs or Base64-encoded data URLs
+
+## Usage examples
+
+### Embed a single image
+
+You can embed individual images by providing URLs or Base64-encoded strings:
+
+```typescript
+import { voyage, ImageEmbeddingInput } from 'voyage-ai-provider';
+import { embedMany } from 'ai';
+
+const imageModel = voyage.imageEmbeddingModel('voyage-multimodal-3');
+
+const { embeddings } = await embedMany<ImageEmbeddingInput>({
+  model: imageModel,
+  values: [
+    {
+      image: 'https://example.com/banana.jpg',
+    },
+    {
+      image: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAA...',
+    },
+  ],
+});
+```
+
+You can also pass image URLs directly without wrapping them in an object:
+
+```typescript
+const { embeddings } = await embedMany<ImageEmbeddingInput>({
+  model: imageModel,
+  values: [
+    'https://example.com/banana.jpg',
+    'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAA...',
+  ],
+});
+```
+
+### Embed multiple images as a single embedding
+
+You can combine multiple images into a single embedding by passing an array:
+
+```typescript
+const { embeddings } = await embedMany<ImageEmbeddingInput>({
+  model: imageModel,
+  values: [
+    {
+      image: [
+        'https://example.com/image1.jpg',
+        'https://example.com/image2.jpg',
+      ],
+    },
+  ],
+});
+```
+
+### Combine text and images
+
+For true multimodal embeddings, combine text and images in a single input:
+
+```typescript
+import { voyage, MultimodalEmbeddingInput } from 'voyage-ai-provider';
+import { embedMany } from 'ai';
+
+const multimodalModel = voyage.multimodalEmbeddingModel('voyage-multimodal-3');
+
+const { embeddings } = await embedMany<MultimodalEmbeddingInput>({
+  model: multimodalModel,
+  values: [
+    {
+      text: ['A ripe yellow banana', 'Fresh tropical fruit'],
+      image: ['https://example.com/banana.jpg'],
+    },
+    {
+      text: ['Code snippet example', 'Programming tutorial'],
+      image: ['data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAA...'],
+    },
+  ],
+});
+```
+
+## Model settings
+
+You can customize the multimodal model behavior with these settings:
+
+```typescript
+const multimodalModel = voyage.multimodalEmbeddingModel('voyage-multimodal-3', {
+  inputType: 'document',
+  outputEncoding: 'base64',
+  truncation: true,
+});
+```
+
+### Available settings
+
+<ParamField path="inputType" type="'query' | 'document'" default="query">
+  The type of input being embedded. This affects the prompt prepended to your inputs:
+  
+  - For `query`: "Represent the query for retrieving supporting documents: " is prepended
+  - For `document`: "Represent the document for retrieval: " is prepended
+  
+  Use `query` when embedding search queries and `document` when embedding items to be searched.
+</ParamField>
+
+<ParamField path="outputEncoding" type="'base64'">
+  The encoding format for the output embeddings. When set to `base64`, embeddings are returned as Base64-encoded NumPy arrays of single-precision floats instead of raw float arrays.
+  
+  This can be useful for efficient transmission and storage.
+</ParamField>
+
+<ParamField path="truncation" type="boolean" default="true">
+  Whether to automatically truncate inputs that exceed the context length limit. When enabled, long inputs are trimmed to fit within the 32,000 token limit.
+</ParamField>
+
+## Use cases
+
+### Visual search
+
+Enable users to search using images by embedding both queries and documents with images:
+
+```typescript
+// Index documents with images
+const { embeddings: docEmbeddings } = await embedMany<MultimodalEmbeddingInput>({
+  model: multimodalModel,
+  values: documents.map(doc => ({
+    text: [doc.title, doc.description],
+    image: [doc.imageUrl],
+  })),
+});
+
+// Search with an image query
+const { embeddings: queryEmbedding } = await embedMany<ImageEmbeddingInput>({
+  model: imageModel,
+  values: [userQueryImage],
+});
+```
+
+### Image similarity
+
+Find similar images by comparing their embeddings:
+
+```typescript
+const imageModel = voyage.imageEmbeddingModel('voyage-multimodal-3');
+
+const { embeddings } = await embedMany<ImageEmbeddingInput>({
+  model: imageModel,
+  values: imageUrls,
+});
+
+// Compare embeddings using cosine similarity
+```
+
+### Multimodal document understanding
+
+Create rich document embeddings that capture both textual and visual information:
+
+```typescript
+const documentEmbeddings = await embedMany<MultimodalEmbeddingInput>({
+  model: multimodalModel,
+  values: [
+    {
+      text: [
+        'Product specifications',
+        'Features: waterproof, durable, lightweight',
+      ],
+      image: [
+        'https://example.com/product-main.jpg',
+        'https://example.com/product-detail.jpg',
+      ],
+    },
+  ],
+});
+```
+
+## Best practices
+
+<Tip>
+When images are unavailable or fail to load, convert them to Base64 data URLs. This ensures reliability and eliminates external dependencies at inference time.
+</Tip>
+
+### Image preparation
+
+1. **Optimize image size**: Resize images to reasonable dimensions before encoding to stay within the 16 million pixel limit
+2. **Use appropriate formats**: JPEG for photos, PNG for graphics with transparency, WebP for optimal compression
+3. **Cache Base64 encodings**: Pre-encode frequently used images to reduce processing time
+
+### Token management
+
+With images consuming approximately 560 pixels per token:
+
+- A 1024x1024 image ≈ 1,873 tokens
+- A 512x512 image ≈ 468 tokens
+- A 256x256 image ≈ 117 tokens
+
+Plan your inputs accordingly to stay within the 32,000 token limit per input.
+
+### Input type selection
+
+Always set `inputType` based on your use case:
+
+```typescript
+// When indexing documents
+const docModel = voyage.multimodalEmbeddingModel('voyage-multimodal-3', {
+  inputType: 'document',
+});
+
+// When processing search queries
+const queryModel = voyage.multimodalEmbeddingModel('voyage-multimodal-3', {
+  inputType: 'query',
+});
+```
+
+<Warning>
+Using the correct `inputType` for queries vs. documents significantly improves retrieval accuracy. Don't use the same `inputType` for both.
+</Warning>

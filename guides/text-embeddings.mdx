@@ -1,0 +1,448 @@
+---
+title: Text embeddings
+description: Learn how to generate text embeddings using Voyage AI models with the Vercel AI SDK
+---
+
+Text embeddings convert text into dense vector representations that capture semantic meaning. You can use Voyage AI's specialized text embedding models to power semantic search, recommendations, clustering, and other AI applications.
+
+## Available models
+
+Voyage AI offers multiple text embedding models optimized for different use cases:
+
+- `voyage-3.5` - Latest flagship model with enhanced performance
+- `voyage-3.5-lite` - Efficient version with faster inference
+- `voyage-3-large` - Large model with 2048 default dimensions
+- `voyage-3` - General purpose model
+- `voyage-3-lite` - Lightweight variant for speed
+- `voyage-code-3` - Specialized for code and technical content
+- `voyage-finance-2` - Optimized for financial documents
+- `voyage-multilingual-2` - Supports multiple languages
+- `voyage-law-2` - Specialized for legal content
+
+## Basic usage
+
+Generate embeddings for a single text input using the `embed` function:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embed } from 'ai';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const { embedding } = await embed({
+  model: voyage.textEmbeddingModel('voyage-3-lite'),
+  value: 'The quick brown fox jumps over the lazy dog',
+});
+
+console.log(embedding);
+```
+
+## Batch processing
+
+Generate embeddings for multiple texts efficiently using `embedMany`:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embedMany } from 'ai';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const { embeddings } = await embedMany({
+  model: voyage.textEmbeddingModel('voyage-3-lite'),
+  values: [
+    'The quick brown fox jumps over the lazy dog',
+    'Artificial intelligence is transforming the world',
+    'Machine learning enables computers to learn without being explicitly programmed',
+  ],
+});
+
+for (const [index, embedding] of embeddings.entries()) {
+  console.log(`Text ${index + 1}: ${embedding.length} dimensions`);
+}
+```
+
+## Input types
+
+Voyage AI uses different prompts for queries and documents to optimize retrieval performance.
+
+<Steps>
+
+### Query embeddings
+
+Use `inputType: 'query'` when embedding search queries:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embed } from 'ai';
+import type { VoyageEmbeddingOptions } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const { embedding } = await embed({
+  model: voyage.textEmbeddingModel('voyage-3-lite'),
+  value: 'How do I reset my password?',
+  providerOptions: {
+    voyage: {
+      inputType: 'query',
+    } satisfies VoyageEmbeddingOptions,
+  },
+});
+```
+
+<Note>
+The model prepends "Represent the query for retrieving supporting documents: " to query inputs.
+</Note>
+
+### Document embeddings
+
+Use `inputType: 'document'` when embedding documents for retrieval:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embedMany } from 'ai';
+import type { VoyageEmbeddingOptions } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const { embeddings } = await embedMany({
+  model: voyage.textEmbeddingModel('voyage-3-lite'),
+  values: [
+    'To reset your password, click the forgot password link on the login page.',
+    'Our support team is available 24/7 to help with your questions.',
+    'Premium users get access to priority support and advanced features.',
+  ],
+  providerOptions: {
+    voyage: {
+      inputType: 'document',
+    } satisfies VoyageEmbeddingOptions,
+  },
+});
+```
+
+<Note>
+The model prepends "Represent the document for retrieval: " to document inputs.
+</Note>
+
+</Steps>
+
+## Grouped text embeddings
+
+You can combine multiple related text segments into a single embedding. This is useful for representing complex documents with titles, descriptions, and metadata:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embedMany } from 'ai';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+// Use multimodal model for grouped text
+const { embeddings } = await embedMany({
+  model: voyage.multimodalEmbeddingModel('voyage-multimodal-3'),
+  values: [
+    // E-commerce product: title + description + features
+    [
+      'Premium Wireless Bluetooth Headphones',
+      'Experience superior sound quality with active noise cancellation',
+      'Battery life: 30 hours, Quick charge: 15 min = 3 hours playback',
+      'Compatible with iOS, Android, and all Bluetooth devices',
+    ],
+    // Blog post: title + summary + tags
+    [
+      'The Future of Artificial Intelligence in Healthcare',
+      'Exploring how AI is revolutionizing medical diagnosis and treatment',
+      'Tags: AI, healthcare, machine learning, medical technology, innovation',
+    ],
+    // Job listing: title + company + description
+    [
+      'Senior Software Engineer - Full Stack',
+      'TechCorp Inc. - Leading technology company',
+      'Build scalable web applications using React, Node.js, and cloud technologies',
+      'Requirements: 5+ years experience, strong problem-solving skills',
+    ],
+  ],
+});
+```
+
+<Tip>
+Grouping related text segments creates richer semantic representations than embedding them separately.
+</Tip>
+
+## Specialized models
+
+### Code embeddings
+
+Use `voyage-code-3` for code snippets and technical documentation:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embedMany } from 'ai';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const { embeddings } = await embedMany({
+  model: voyage.textEmbeddingModel('voyage-code-3'),
+  values: [
+    'function calculateTotal(items) { return items.reduce((sum, item) => sum + item.price, 0); }',
+    'const express = require("express"); const app = express(); app.listen(3000);',
+    'class UserAuthentication { constructor(database) { this.db = database; } }',
+  ],
+});
+```
+
+### Multilingual embeddings
+
+Use `voyage-multilingual-2` for content in multiple languages:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embedMany } from 'ai';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const { embeddings } = await embedMany({
+  model: voyage.textEmbeddingModel('voyage-multilingual-2'),
+  values: [
+    'Hello, how are you?',
+    'Bonjour, comment allez-vous?',
+    'Hola, ¿cómo estás?',
+    '你好，你好吗？',
+  ],
+});
+```
+
+### Domain-specific models
+
+<Tabs items={['Finance', 'Legal']}>
+
+<Tab value="Finance">
+
+Use `voyage-finance-2` for financial documents:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embedMany } from 'ai';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const { embeddings } = await embedMany({
+  model: voyage.textEmbeddingModel('voyage-finance-2'),
+  values: [
+    'Q3 earnings exceeded analyst expectations with revenue growth of 15%',
+    'The Federal Reserve announced a 25 basis point interest rate increase',
+    'Portfolio diversification reduces risk through asset allocation',
+  ],
+});
+```
+
+</Tab>
+
+<Tab value="Legal">
+
+Use `voyage-law-2` for legal content:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embedMany } from 'ai';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const { embeddings } = await embedMany({
+  model: voyage.textEmbeddingModel('voyage-law-2'),
+  values: [
+    'The plaintiff alleges breach of contract under Section 12 of the agreement',
+    'Pursuant to Article III, the parties agree to binding arbitration',
+    'The court granted summary judgment in favor of the defendant',
+  ],
+});
+```
+
+</Tab>
+
+</Tabs>
+
+## Configuration options
+
+Customize embedding behavior with provider options:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embed } from 'ai';
+import type { VoyageEmbeddingOptions } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const { embedding } = await embed({
+  model: voyage.textEmbeddingModel('voyage-code-3'),
+  value: 'Sample text for embedding',
+  providerOptions: {
+    voyage: {
+      inputType: 'query',
+      outputDimension: 512,
+      outputDtype: 'float',
+      truncation: true,
+    } satisfies VoyageEmbeddingOptions,
+  },
+});
+```
+
+### Available options
+
+<Accordion title="inputType">
+
+The input type for embeddings. Defaults to `"query"`.
+
+- `query` - Prepends "Represent the query for retrieving supporting documents: "
+- `document` - Prepends "Represent the document for retrieval: "
+
+</Accordion>
+
+<Accordion title="outputDimension">
+
+The number of dimensions for output embeddings. If not specified, uses the model's default dimension.
+
+- `voyage-code-3` supports: 2048, 1024 (default), 512, and 256
+- `voyage-3-large` supports: 2048, 1024 (default), 512, and 256
+
+Refer to the [model documentation](https://docs.voyageai.com/docs/embeddings) for supported values.
+
+</Accordion>
+
+<Accordion title="outputDtype">
+
+The data type for output embeddings. Defaults to `"float"`.
+
+- `float` - 32-bit single-precision floating-point numbers (supported by all models)
+- `int8` - 8-bit integers from -128 to 127 (supported by `voyage-code-3`)
+- `uint8` - 8-bit integers from 0 to 255 (supported by `voyage-code-3`)
+- `binary` - Bit-packed quantized values using `int8` (supported by `voyage-code-3`)
+- `ubinary` - Bit-packed quantized values using `uint8` (supported by `voyage-code-3`)
+
+See [quantization FAQ](https://docs.voyageai.com/docs/faq#what-is-quantization-and-output-data-types) for details.
+
+</Accordion>
+
+<Accordion title="truncation">
+
+Whether to truncate input texts to fit within the context length. Defaults to `false`.
+
+Set to `true` to automatically truncate long texts instead of raising an error.
+
+</Accordion>
+
+## Working with usage data
+
+The embedding response includes token usage information:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embedMany } from 'ai';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const result = await embedMany({
+  model: voyage.textEmbeddingModel('voyage-3-lite'),
+  values: [
+    'First text to embed',
+    'Second text to embed',
+    'Third text to embed',
+  ],
+});
+
+console.log(`Generated ${result.embeddings.length} embeddings`);
+console.log(`Tokens used: ${result.usage?.tokens}`);
+```
+
+## Error handling
+
+Handle errors gracefully when generating embeddings:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embed } from 'ai';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+try {
+  const { embedding } = await embed({
+    model: voyage.textEmbeddingModel('voyage-3-lite'),
+    value: 'Text to embed',
+  });
+  
+  console.log('Embedding generated successfully');
+} catch (error) {
+  console.error('Failed to generate embedding:', error);
+}
+```
+
+<Warning>
+The maximum batch size is 128 embeddings per call. Split larger batches into multiple requests.
+</Warning>
+
+## Best practices
+
+<Steps>
+
+### Choose the right model
+
+Select models based on your use case:
+- General text: `voyage-3.5` or `voyage-3-lite`
+- Code: `voyage-code-3`
+- Multilingual: `voyage-multilingual-2`
+- Domain-specific: `voyage-finance-2` or `voyage-law-2`
+
+### Use appropriate input types
+
+Set `inputType` correctly for optimal retrieval:
+- Use `query` for search queries
+- Use `document` for content being searched
+
+### Batch when possible
+
+Use `embedMany` instead of multiple `embed` calls to reduce API overhead and improve performance.
+
+### Consider dimension reduction
+
+For models that support it, use lower `outputDimension` values to reduce storage and computation costs while maintaining acceptable accuracy.
+
+</Steps>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Image embeddings" icon="image" href="/guides/image-embeddings">
+    Learn how to generate embeddings from images
+  </Card>
+  <Card title="Multimodal embeddings" icon="layer-group" href="/guides/multimodal-embeddings">
+    Combine text and images in a single embedding
+  </Card>
+  <Card title="Reranking" icon="arrow-down-wide-short" href="/guides/reranking">
+    Improve search results with reranking
+  </Card>
+  <Card title="Configuration" icon="gear" href="/guides/configuration">
+    Customize provider settings
+  </Card>
+</CardGroup>

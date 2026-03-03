@@ -1,0 +1,188 @@
+---
+title: textEmbeddingModel()
+description: Create a Voyage text embedding model instance
+---
+
+Creates a text embedding model instance that generates embeddings for text inputs using Voyage AI's text-optimized models.
+
+```ts
+import { voyage } from '@ai-sdk/voyage';
+
+const model = voyage.textEmbeddingModel('voyage-3-lite');
+```
+
+## Parameters
+
+<ParamField path="modelId" type="VoyageEmbeddingModelId" required>
+  The identifier of the text embedding model to use.
+
+  **Available models:**
+  - `voyage-3.5` - Latest generation model
+  - `voyage-3.5-lite` - Lightweight version of 3.5
+  - `voyage-3-large` - Large capacity model
+  - `voyage-3` - Standard third generation model
+  - `voyage-3-lite` - Lightweight third generation model
+  - `voyage-code-3` - Optimized for code embeddings
+  - `voyage-finance-2` - Specialized for financial text
+  - `voyage-multilingual-2` - Supports multiple languages
+  - `voyage-law-2` - Specialized for legal text
+  - `voyage-code-2` - Previous generation code model
+</ParamField>
+
+## Returns
+
+<ResponseField name="EmbeddingModelV3" type="object">
+  A text embedding model instance that implements the AI SDK's `EmbeddingModelV3` interface.
+
+  <ResponseField name="modelId" type="string">
+    The model identifier passed during creation
+  </ResponseField>
+
+  <ResponseField name="provider" type="string">
+    The provider identifier: `"voyage.embedding"`
+  </ResponseField>
+
+  <ResponseField name="maxEmbeddingsPerCall" type="number">
+    Maximum number of inputs per API call: `128`
+  </ResponseField>
+
+  <ResponseField name="supportsParallelCalls" type="boolean">
+    Whether parallel calls are supported: `false`
+  </ResponseField>
+</ResponseField>
+
+## Input types
+
+The text embedding model accepts `TextEmbeddingInput` which can be:
+
+- **Single text**: `string` - A single text string
+- **Multiple texts**: `string[]` - Array of texts combined into one embedding
+- **Object format**: `{ text: string | string[] }` - Alternative format with explicit text property
+
+## Usage examples
+
+### Generate single embedding
+
+Embed a single text string to generate one embedding vector.
+
+```ts
+import { voyage } from '@ai-sdk/voyage';
+import { embed } from 'ai';
+
+const { embedding } = await embed({
+  model: voyage.textEmbeddingModel('voyage-3-lite'),
+  value: 'The quick brown fox jumps over the lazy dog',
+});
+
+console.log(embedding);
+```
+
+### Generate multiple embeddings
+
+Embed multiple text strings to generate separate embedding vectors.
+
+```ts
+import { voyage } from '@ai-sdk/voyage';
+import { embedMany } from 'ai';
+
+const { embeddings } = await embedMany({
+  model: voyage.textEmbeddingModel('voyage-3-lite'),
+  values: [
+    'The quick brown fox jumps over the lazy dog',
+    'Artificial intelligence is transforming the world',
+    'Machine learning enables computers to learn without being explicitly programmed',
+  ],
+});
+
+for (const [index, embedding] of embeddings.entries()) {
+  console.log(`Embedding ${index}: length ${embedding.length}`);
+}
+```
+
+### Combine multiple texts into one embedding
+
+You can combine multiple text strings into a single embedding by passing an array. This is useful for embedding documents with multiple fields.
+
+```ts
+import { voyage } from '@ai-sdk/voyage';
+import { embedMany } from 'ai';
+
+const { embeddings } = await embedMany({
+  model: voyage.textEmbeddingModel('voyage-3'),
+  values: [
+    // Product: title + description + features
+    [
+      'Premium Wireless Bluetooth Headphones',
+      'Experience superior sound quality with active noise cancellation',
+      'Battery life: 30 hours, Quick charge: 15 min = 3 hours playback',
+      'Compatible with iOS, Android, and all Bluetooth devices',
+    ],
+    // Blog post: title + summary + tags
+    [
+      'The Future of Artificial Intelligence in Healthcare',
+      'Exploring how AI is revolutionizing medical diagnosis and treatment',
+      'Tags: AI, healthcare, machine learning, medical technology, innovation',
+    ],
+  ],
+});
+
+console.log(`Generated ${embeddings.length} embeddings`);
+```
+
+### Use provider options
+
+You can customize the embedding behavior using provider-specific options.
+
+```ts
+import { voyage } from '@ai-sdk/voyage';
+import { embed } from 'ai';
+import type { VoyageEmbeddingOptions } from '@ai-sdk/voyage';
+
+const { embedding } = await embed({
+  model: voyage.textEmbeddingModel('voyage-3-lite'),
+  value: 'The quick brown fox jumps over the lazy dog',
+  providerOptions: {
+    voyage: {
+      inputType: 'query',
+      truncation: true,
+    } satisfies VoyageEmbeddingOptions,
+  },
+});
+```
+
+## Provider options
+
+You can pass Voyage-specific options through the `providerOptions` parameter:
+
+<ParamField path="providerOptions.voyage.inputType" type="'query' | 'document'">
+  The input type for the embeddings. Defaults to `"query"`.
+
+  - `query`: Prepends "Represent the query for retrieving supporting documents: "
+  - `document`: Prepends "Represent the document for retrieval: "
+</ParamField>
+
+<ParamField path="providerOptions.voyage.outputDimension" type="number">
+  The number of dimensions for the resulting output embeddings.
+
+  If not specified, uses the model's default dimension.
+
+  Supported values vary by model:
+  - `voyage-code-3`: 2048, 1024 (default), 512, 256
+  - `voyage-3-large`: 2048, 1024 (default), 512, 256
+</ParamField>
+
+<ParamField path="providerOptions.voyage.outputDtype" type="'float' | 'int8' | 'uint8' | 'binary' | 'ubinary'">
+  The data type for the resulting output embeddings. Defaults to `'float'`.
+
+  - `float`: 32-bit single-precision floating-point numbers (supported by all models)
+  - `int8`: 8-bit integers from -128 to 127 (supported by `voyage-code-3`)
+  - `uint8`: 8-bit integers from 0 to 255 (supported by `voyage-code-3`)
+  - `binary`: Bit-packed quantized values using offset binary method (supported by `voyage-code-3`)
+  - `ubinary`: Bit-packed quantized values (supported by `voyage-code-3`)
+
+  For binary types, the returned list length is 1/8 of outputDimension.
+</ParamField>
+
+<ParamField path="providerOptions.voyage.truncation" type="boolean">
+  Whether to truncate the input texts to fit within the context length.
+</ParamField>

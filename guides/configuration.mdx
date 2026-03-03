@@ -1,0 +1,548 @@
+---
+title: Configuration
+description: Learn how to configure the Voyage AI provider for the Vercel AI SDK
+---
+
+Configure the Voyage AI provider to customize API endpoints, authentication, request behavior, and model-specific settings.
+
+## Provider setup
+
+Create a Voyage AI provider instance with your configuration:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+```
+
+## Authentication
+
+The provider requires an API key from Voyage AI:
+
+<Steps>
+
+### Environment variable
+
+Set your API key as an environment variable (recommended):
+
+```bash
+export VOYAGE_API_KEY="your-api-key-here"
+```
+
+The provider automatically reads from `VOYAGE_API_KEY`:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+
+const voyage = createVoyage();
+// API key loaded from VOYAGE_API_KEY environment variable
+```
+
+### Direct configuration
+
+Pass the API key directly when creating the provider:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  apiKey: 'your-api-key-here',
+});
+```
+
+<Warning>
+Never hardcode API keys in your source code. Use environment variables or secure configuration management.
+</Warning>
+
+</Steps>
+
+## Provider settings
+
+Customize the provider with these settings:
+
+### baseURL
+
+Override the default API endpoint:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+  baseURL: 'https://api.voyageai.com/v1',
+});
+```
+
+<Accordion title="When to use baseURL">
+
+Customize the base URL to:
+- Use a proxy server for API calls
+- Route requests through a custom gateway
+- Test against a staging environment
+- Use a different API version
+
+The default is `https://api.voyageai.com/v1`.
+
+</Accordion>
+
+### headers
+
+Add custom headers to all API requests:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+  headers: {
+    'X-Custom-Header': 'custom-value',
+    'User-Agent': 'my-app/1.0',
+  },
+});
+```
+
+<Note>
+Custom headers are included in every request to the Voyage AI API.
+</Note>
+
+### fetch
+
+Provide a custom fetch implementation:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+  fetch: async (url, options) => {
+    console.log('Making request to:', url);
+    const response = await fetch(url, options);
+    console.log('Response status:', response.status);
+    return response;
+  },
+});
+```
+
+<Accordion title="Custom fetch use cases">
+
+Use a custom fetch implementation to:
+- Add request/response logging
+- Implement retry logic
+- Add request timing metrics
+- Intercept and modify requests
+- Test with mocked responses
+- Add circuit breaker patterns
+
+</Accordion>
+
+## Complete configuration example
+
+Combine all settings for full control:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+  baseURL: 'https://api.voyageai.com/v1',
+  headers: {
+    'X-Application': 'my-app',
+    'X-Environment': process.env.NODE_ENV || 'development',
+  },
+  fetch: async (url, options) => {
+    const startTime = Date.now();
+    try {
+      const response = await fetch(url, options);
+      const duration = Date.now() - startTime;
+      console.log(`Request completed in ${duration}ms`);
+      return response;
+    } catch (error) {
+      console.error('Request failed:', error);
+      throw error;
+    }
+  },
+});
+```
+
+## Model-specific configuration
+
+Each model type accepts specific provider options:
+
+<Tabs items={['Text Embeddings', 'Multimodal Embeddings', 'Reranking']}>
+
+<Tab value="Text Embeddings">
+
+### Text embedding options
+
+Configure text embedding behavior:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embed } from 'ai';
+import type { VoyageEmbeddingOptions } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const { embedding } = await embed({
+  model: voyage.textEmbeddingModel('voyage-code-3'),
+  value: 'Sample text',
+  providerOptions: {
+    voyage: {
+      inputType: 'query',
+      outputDimension: 512,
+      outputDtype: 'float',
+      truncation: true,
+    } satisfies VoyageEmbeddingOptions,
+  },
+});
+```
+
+**Available options:**
+
+- `inputType`: `'query'` or `'document'` - Optimizes prompt for retrieval
+- `outputDimension`: Number - Reduces embedding dimensions (model-specific)
+- `outputDtype`: `'float'` | `'int8'` | `'uint8'` | `'binary'` | `'ubinary'` - Output data type
+- `truncation`: Boolean - Automatically truncate long inputs
+
+</Tab>
+
+<Tab value="Multimodal Embeddings">
+
+### Multimodal embedding options
+
+Configure multimodal embedding behavior:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embed } from 'ai';
+import type { MultimodalEmbeddingInput, VoyageMultimodalEmbeddingOptions } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const { embedding } = await embed<MultimodalEmbeddingInput>({
+  model: voyage.multimodalEmbeddingModel('voyage-multimodal-3'),
+  value: {
+    text: ['Sample text'],
+    image: ['https://example.com/image.jpg'],
+  },
+  providerOptions: {
+    voyage: {
+      inputType: 'document',
+      outputEncoding: 'base64',
+      truncation: true,
+    } satisfies VoyageMultimodalEmbeddingOptions,
+  },
+});
+```
+
+**Available options:**
+
+- `inputType`: `'query'` or `'document'` - Optimizes prompt for retrieval
+- `outputEncoding`: `'base64'` - Encode embeddings as base64
+- `truncation`: Boolean - Automatically truncate long inputs
+
+</Tab>
+
+<Tab value="Reranking">
+
+### Reranking options
+
+Configure reranking behavior:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { rerank } from 'ai';
+import type { VoyageRerankingOptions } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const result = await rerank({
+  model: voyage.reranking('rerank-2.5'),
+  query: 'sample query',
+  documents: ['doc1', 'doc2'],
+  topN: 5,
+  providerOptions: {
+    voyage: {
+      returnDocuments: true,
+      truncation: true,
+    } satisfies VoyageRerankingOptions,
+  },
+});
+```
+
+**Available options:**
+
+- `returnDocuments`: Boolean - Include document text in response
+- `truncation`: Boolean - Automatically truncate long inputs
+
+</Tab>
+
+</Tabs>
+
+## Default provider instance
+
+Use the pre-configured default instance:
+
+```typescript
+import { voyage } from '@ai-sdk/voyage';
+import { embed } from 'ai';
+
+// Uses VOYAGE_API_KEY environment variable
+const { embedding } = await embed({
+  model: voyage.textEmbeddingModel('voyage-3-lite'),
+  value: 'Sample text',
+});
+```
+
+<Note>
+The default `voyage` instance reads configuration from environment variables and uses default settings.
+</Note>
+
+## Multiple provider instances
+
+Create separate instances for different configurations:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+
+// Production instance
+const voyageProduction = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY_PROD,
+  headers: {
+    'X-Environment': 'production',
+  },
+});
+
+// Development instance with logging
+const voyageDevelopment = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY_DEV,
+  headers: {
+    'X-Environment': 'development',
+  },
+  fetch: async (url, options) => {
+    console.log('Dev request:', url);
+    return fetch(url, options);
+  },
+});
+
+// Use appropriate instance based on environment
+const voyage = process.env.NODE_ENV === 'production'
+  ? voyageProduction
+  : voyageDevelopment;
+```
+
+## Environment-based configuration
+
+Manage configuration across environments:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+
+interface Config {
+  apiKey: string;
+  baseURL?: string;
+  environment: string;
+}
+
+const configs: Record<string, Config> = {
+  development: {
+    apiKey: process.env.VOYAGE_API_KEY_DEV!,
+    environment: 'development',
+  },
+  staging: {
+    apiKey: process.env.VOYAGE_API_KEY_STAGING!,
+    baseURL: 'https://staging-api.voyageai.com/v1',
+    environment: 'staging',
+  },
+  production: {
+    apiKey: process.env.VOYAGE_API_KEY_PROD!,
+    environment: 'production',
+  },
+};
+
+const env = process.env.NODE_ENV || 'development';
+const config = configs[env];
+
+const voyage = createVoyage({
+  apiKey: config.apiKey,
+  baseURL: config.baseURL,
+  headers: {
+    'X-Environment': config.environment,
+  },
+});
+```
+
+## Request interceptor pattern
+
+Implement request/response interceptors:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+
+interface RequestMetrics {
+  url: string;
+  duration: number;
+  status: number;
+}
+
+const metrics: RequestMetrics[] = [];
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+  fetch: async (url, options) => {
+    // Pre-request hook
+    const startTime = Date.now();
+    console.log('Starting request:', url);
+    
+    try {
+      // Make request
+      const response = await fetch(url, options);
+      
+      // Post-response hook
+      const duration = Date.now() - startTime;
+      metrics.push({
+        url: url.toString(),
+        duration,
+        status: response.status,
+      });
+      
+      console.log(`Request completed: ${response.status} (${duration}ms)`);
+      return response;
+    } catch (error) {
+      // Error hook
+      const duration = Date.now() - startTime;
+      console.error(`Request failed after ${duration}ms:`, error);
+      throw error;
+    }
+  },
+});
+
+// Access metrics
+setInterval(() => {
+  const avgDuration = metrics.reduce((sum, m) => sum + m.duration, 0) / metrics.length;
+  console.log(`Average request duration: ${avgDuration.toFixed(2)}ms`);
+}, 60000);
+```
+
+## Retry logic
+
+Implement automatic retries for failed requests:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+
+async function fetchWithRetry(
+  url: RequestInfo,
+  options: RequestInit,
+  maxRetries = 3,
+): Promise<Response> {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await fetch(url, options);
+      
+      // Retry on server errors
+      if (response.status >= 500 && attempt < maxRetries) {
+        console.log(`Server error, retrying (${attempt}/${maxRetries})...`);
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        continue;
+      }
+      
+      return response;
+    } catch (error) {
+      if (attempt === maxRetries) throw error;
+      
+      console.log(`Network error, retrying (${attempt}/${maxRetries})...`);
+      await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+    }
+  }
+  
+  throw new Error('Max retries exceeded');
+}
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+  fetch: fetchWithRetry,
+});
+```
+
+<Tip>
+Use exponential backoff when implementing retry logic to avoid overwhelming the API during outages.
+</Tip>
+
+## Testing configuration
+
+Configure the provider for testing:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+
+// Mock fetch for testing
+const mockFetch = async (url: RequestInfo, options?: RequestInit) => {
+  return new Response(
+    JSON.stringify({
+      data: [{ embedding: new Array(1024).fill(0.1) }],
+      usage: { total_tokens: 10 },
+    }),
+    {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    },
+  );
+};
+
+const voyageTest = createVoyage({
+  apiKey: 'test-key',
+  fetch: mockFetch,
+});
+```
+
+## Best practices
+
+<Steps>
+
+### Use environment variables
+
+Store API keys and configuration in environment variables, never in source code.
+
+### Create reusable instances
+
+Create provider instances once and reuse them throughout your application.
+
+### Implement monitoring
+
+Use custom fetch functions to add logging, metrics, and error tracking.
+
+### Handle errors gracefully
+
+Implement retry logic and proper error handling for production applications.
+
+### Separate environments
+
+Use different API keys and configurations for development, staging, and production.
+
+</Steps>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Text embeddings" icon="font" href="/guides/text-embeddings">
+    Generate embeddings from text
+  </Card>
+  <Card title="Multimodal embeddings" icon="layer-group" href="/guides/multimodal-embeddings">
+    Combine text and images
+  </Card>
+  <Card title="Reranking" icon="arrow-down-wide-short" href="/guides/reranking">
+    Improve search results
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/provider/create-voyage">
+    Explore the complete API
+  </Card>
+</CardGroup>

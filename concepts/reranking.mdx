@@ -1,0 +1,410 @@
+---
+title: Reranking
+description: Learn what reranking is and how to improve search results with Voyage AI
+---
+
+Reranking improves search results by re-scoring documents based on their relevance to a query. It's a powerful technique for refining initial search results from embeddings or keyword searches.
+
+## What is reranking?
+
+Reranking is a two-stage retrieval process:
+
+1. **Initial retrieval**: Use fast methods (embeddings, keywords) to get candidate documents
+2. **Reranking**: Use a more sophisticated model to score and reorder the candidates
+
+This approach gives you the speed of simple retrieval with the accuracy of advanced models.
+
+## Why use reranking?
+
+Reranking models understand the relationship between queries and documents better than embeddings alone:
+
+- **Better relevance**: Cross-attention between query and document
+- **Semantic understanding**: Captures nuanced meaning
+- **Improved ranking**: More accurate ordering of results
+- **Cost-effective**: Only rerank top candidates, not entire corpus
+
+<Info>
+Embeddings encode documents independently, while reranking models analyze the query-document relationship directly.
+</Info>
+
+## Basic usage
+
+Use the `rerank` function from the AI SDK:
+
+```typescript
+import { voyage } from '@ai-sdk/voyage';
+import { rerank } from 'ai';
+
+const { ranking } = await rerank({
+  model: voyage.reranking('rerank-2'),
+  query: 'What is machine learning?',
+  documents: [
+    'Machine learning is a subset of artificial intelligence...',
+    'The weather today is sunny and warm.',
+    'Deep learning uses neural networks with multiple layers...',
+    'I like to eat pizza on weekends.',
+  ],
+});
+
+console.log(ranking);
+// [
+//   { index: 0, relevanceScore: 0.95 },
+//   { index: 2, relevanceScore: 0.87 },
+//   { index: 1, relevanceScore: 0.12 },
+//   { index: 3, relevanceScore: 0.08 },
+// ]
+```
+
+The results are sorted by relevance score, with the most relevant documents first.
+
+## Available models
+
+Voyage provides several reranking models:
+
+- `rerank-2.5` - Latest model with improved accuracy
+- `rerank-2.5-lite` - Faster, efficient version
+- `rerank-2` - Previous generation
+- `rerank-lite-2` - Efficient version of rerank-2
+- `rerank-1` - First generation
+- `rerank-lite-1` - Efficient first generation
+
+<Tip>
+Use `rerank-2.5` for the best accuracy or `rerank-2.5-lite` for a balance between speed and quality.
+</Tip>
+
+## Limiting results
+
+Use the `topN` parameter to get only the most relevant results:
+
+```typescript
+const { ranking } = await rerank({
+  model: voyage.reranking('rerank-2'),
+  query: 'machine learning algorithms',
+  documents: [
+    'Linear regression is a supervised learning algorithm...',
+    'The sky is blue.',
+    'Decision trees are used for classification...',
+    'Neural networks can approximate any function...',
+    'I enjoy hiking in the mountains.',
+  ],
+  topN: 3, // Only return top 3 results
+});
+
+console.log(ranking.length); // 3
+```
+
+<Note>
+The `topN` parameter is mapped to the API's `top_k` parameter. Both names refer to the same functionality.
+</Note>
+
+## Reranking options
+
+The `VoyageRerankingOptions` type defines additional configuration:
+
+```typescript
+type VoyageRerankingOptions = {
+  /**
+   * Whether to return the documents in the response. Defaults to false.
+   */
+  returnDocuments?: boolean;
+
+  /**
+   * Whether to truncate inputs to fit context length. Defaults to true.
+   */
+  truncation?: boolean;
+};
+```
+
+### Returning documents
+
+By default, the response only includes indices and scores. Enable `returnDocuments` to include the original text:
+
+```typescript
+const result = await rerank({
+  model: voyage.reranking('rerank-2'),
+  query: 'AI applications',
+  documents: ['AI is used in healthcare', 'Dogs are loyal pets'],
+  providerOptions: {
+    voyage: {
+      returnDocuments: true,
+    },
+  },
+});
+
+// Note: The AI SDK's rerank function doesn't expose documents in the response
+// This option affects the API response but not the standardized SDK output
+```
+
+<Accordion title="Why doesn't the SDK return documents?">
+The AI SDK standardizes the response format across all providers. The `ranking` array always contains `{ index, relevanceScore }` objects.
+
+You already have the original documents in your code, so you can access them using the index:
+
+```typescript
+const documents = ['Doc 1', 'Doc 2', 'Doc 3'];
+const { ranking } = await rerank({ model, query, documents });
+
+const topDoc = documents[ranking[0].index];
+```
+</Accordion>
+
+### Truncation
+
+Control whether inputs are truncated to fit the model's context length:
+
+```typescript
+const { ranking } = await rerank({
+  model: voyage.reranking('rerank-2'),
+  query: 'very long query...',
+  documents: ['very long document...'],
+  providerOptions: {
+    voyage: {
+      truncation: false, // Throw error if inputs are too long
+    },
+  },
+});
+```
+
+<Info>
+**Context length limits:**
+- `rerank-2.5` / `rerank-2.5-lite`: 8,000 tokens (query), 32,000 tokens (query + document)
+- `rerank-2`: 4,000 tokens (query), 16,000 tokens (query + document)
+- `rerank-2-lite` / `rerank-1`: 2,000 tokens (query), 8,000 tokens (query + document)
+- `rerank-lite-1`: 1,000 tokens (query), 4,000 tokens (query + document)
+</Info>
+
+## Understanding the response
+
+The reranking response includes:
+
+```typescript
+interface RerankingResponse {
+  ranking: Array<{
+    index: number;        // Index in the original documents array
+    relevanceScore: number; // Score between 0 and 1
+  }>;
+  warnings?: SharedV3Warning[];
+  response: {
+    headers: Record<string, string>;
+    body: unknown;
+  };
+}
+```
+
+### Relevance scores
+
+Scores are normalized between 0 and 1:
+- **0.8 - 1.0**: Highly relevant
+- **0.5 - 0.8**: Moderately relevant
+- **0.0 - 0.5**: Less relevant
+
+```typescript
+const { ranking } = await rerank({
+  model: voyage.reranking('rerank-2'),
+  query: 'deep learning',
+  documents: [
+    'Deep learning is a type of machine learning',
+    'Pizza is delicious',
+  ],
+});
+
+if (ranking[0].relevanceScore > 0.7) {
+  console.log('Highly relevant result found!');
+}
+```
+
+## Model implementation
+
+The `VoyageRerankingModel` class implements the `RerankingModelV3` interface:
+
+```typescript
+class VoyageRerankingModel implements RerankingModelV3 {
+  readonly specificationVersion = 'v3';
+  readonly modelId: VoyageRerankingModelId;
+  readonly provider: string;
+
+  async doRerank({
+    documents,
+    query,
+    topN,
+    headers,
+    abortSignal,
+    providerOptions,
+  }: RerankingParams): Promise<RerankingResponse> {
+    // Implementation details...
+  }
+}
+```
+
+### Document types
+
+The reranking API handles both text and structured documents:
+
+```typescript
+// Text documents
+const result1 = await rerank({
+  model: voyage.reranking('rerank-2'),
+  query: 'AI',
+  documents: ['Text 1', 'Text 2'],
+});
+
+// Structured documents (automatically stringified)
+const result2 = await rerank({
+  model: voyage.reranking('rerank-2'),
+  query: 'AI',
+  documents: [
+    { title: 'Article 1', content: 'AI is...' },
+    { title: 'Article 2', content: 'ML is...' },
+  ],
+});
+```
+
+<Note>
+Structured documents are converted to JSON strings before being sent to the API. For best results, use plain text or format your objects as readable strings.
+</Note>
+
+## Complete example: Semantic search with reranking
+
+Combine embeddings and reranking for optimal search:
+
+```typescript
+import { voyage } from '@ai-sdk/voyage';
+import { embed, rerank } from 'ai';
+
+// 1. Your document corpus
+const documents = [
+  'Machine learning is a subset of AI that focuses on learning from data.',
+  'Deep learning uses neural networks with many layers.',
+  'Artificial intelligence aims to create intelligent machines.',
+  'The weather forecast predicts rain tomorrow.',
+  'Neural networks are inspired by biological neurons.',
+  'I prefer coffee over tea in the morning.',
+];
+
+// 2. Embed all documents
+const { embeddings: docEmbeddings } = await embedMany({
+  model: voyage('voyage-3'),
+  values: documents,
+  providerOptions: { voyage: { inputType: 'document' } },
+});
+
+// 3. User query
+const query = 'What is deep learning?';
+
+// 4. Embed the query
+const { embedding: queryEmbedding } = await embed({
+  model: voyage('voyage-3'),
+  value: query,
+  providerOptions: { voyage: { inputType: 'query' } },
+});
+
+// 5. Find top candidates with cosine similarity
+function cosineSimilarity(a: number[], b: number[]): number {
+  const dotProduct = a.reduce((sum, val, i) => sum + val * b[i], 0);
+  const magA = Math.sqrt(a.reduce((sum, val) => sum + val * val, 0));
+  const magB = Math.sqrt(b.reduce((sum, val) => sum + val * val, 0));
+  return dotProduct / (magA * magB);
+}
+
+const similarities = docEmbeddings.map((emb, idx) => ({
+  index: idx,
+  score: cosineSimilarity(queryEmbedding, emb),
+}));
+
+// Get top 5 candidates
+const topCandidates = similarities
+  .sort((a, b) => b.score - a.score)
+  .slice(0, 5);
+
+const candidateDocuments = topCandidates.map((c) => documents[c.index]);
+
+// 6. Rerank the candidates
+const { ranking } = await rerank({
+  model: voyage.reranking('rerank-2'),
+  query,
+  documents: candidateDocuments,
+  topN: 3,
+});
+
+// 7. Get final results
+const finalResults = ranking.map((r) => ({
+  document: candidateDocuments[r.index],
+  score: r.relevanceScore,
+}));
+
+console.log('Top results:', finalResults);
+```
+
+<Tip>
+This two-stage approach combines the speed of embedding search with the accuracy of reranking:
+1. Use embeddings to narrow down from thousands/millions of documents to a few dozen
+2. Use reranking to precisely order those candidates
+</Tip>
+
+## Best practices
+
+### Choose the right number of candidates
+
+Rerank 10-100 candidates from your initial retrieval:
+
+```typescript
+// Too few candidates: might miss relevant documents
+const candidates = await getTopEmbeddingMatches(query, 5);
+
+// Good: balance between coverage and cost
+const candidates = await getTopEmbeddingMatches(query, 20);
+
+// Too many: slower and more expensive
+const candidates = await getTopEmbeddingMatches(query, 500);
+```
+
+### Set appropriate topN
+
+Only return as many results as you need:
+
+```typescript
+// For a chat interface
+const { ranking } = await rerank({
+  model: voyage.reranking('rerank-2'),
+  query,
+  documents: candidates,
+  topN: 3, // Just enough for context
+});
+
+// For a search results page
+const { ranking } = await rerank({
+  model: voyage.reranking('rerank-2'),
+  query,
+  documents: candidates,
+  topN: 10, // Full page of results
+});
+```
+
+### Handle edge cases
+
+```typescript
+const { ranking } = await rerank({
+  model: voyage.reranking('rerank-2'),
+  query,
+  documents: candidates,
+  topN: 5,
+});
+
+// Filter by minimum relevance
+const relevantResults = ranking.filter((r) => r.relevanceScore > 0.5);
+
+if (relevantResults.length === 0) {
+  console.log('No relevant results found');
+}
+```
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Embeddings" icon="vector-square" href="/concepts/embeddings">
+    Learn about embedding-based retrieval
+  </Card>
+  <Card title="Models" icon="microchip" href="/models/reranking-models">
+    See all available reranking models
+  </Card>
+</CardGroup>

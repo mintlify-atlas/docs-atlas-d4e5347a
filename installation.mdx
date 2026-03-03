@@ -1,0 +1,109 @@
+---
+title: Installation
+description: Install the Voyage AI Provider for the Vercel AI SDK
+---
+
+# Installation
+
+Install the Voyage AI Provider package to use Voyage AI models with the Vercel AI SDK.
+
+## Install the package
+
+Choose your preferred package manager:
+
+<CodeGroup>
+
+```bash npm
+npm install voyage-ai-provider
+```
+
+```bash pnpm
+pnpm add voyage-ai-provider
+```
+
+```bash yarn
+yarn add voyage-ai-provider
+```
+
+```bash bun
+bun add voyage-ai-provider
+```
+
+</CodeGroup>
+
+## Get your API key
+
+You need a Voyage AI API key to use the provider:
+
+1. Sign up at [Voyage AI](https://www.voyageai.com)
+2. Navigate to your dashboard to create an API key
+3. Copy your API key for the next step
+
+## Configure your environment
+
+Add your API key to your environment variables:
+
+<CodeGroup>
+
+```bash .env
+VOYAGE_API_KEY=your-api-key
+```
+
+```bash .env.local
+VOYAGE_API_KEY=your-api-key
+```
+
+</CodeGroup>
+
+<Warning>
+  Keep your API key secure and never commit it to version control. Use environment variables or a secrets management service.
+</Warning>
+
+## Verify installation
+
+Create a simple test file to verify your installation:
+
+```typescript test.ts
+import { voyage } from 'voyage-ai-provider';
+import { embed } from 'ai';
+
+const model = voyage.textEmbeddingModel('voyage-3-lite');
+
+const { embedding } = await embed({
+  model,
+  value: 'Hello, Voyage AI!',
+});
+
+console.log('Embedding length:', embedding.length);
+```
+
+Run the test:
+
+<CodeGroup>
+
+```bash node
+node test.ts
+```
+
+```bash bun
+bun test.ts
+```
+
+```bash tsx
+tsx test.ts
+```
+
+</CodeGroup>
+
+If you see the embedding length printed, you're ready to use Voyage AI Provider!
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="bolt" href="/quickstart">
+    Generate your first embeddings
+  </Card>
+  <Card title="Text embeddings" icon="align-left" href="/guides/text-embeddings">
+    Learn about text embedding models
+  </Card>
+</CardGroup>

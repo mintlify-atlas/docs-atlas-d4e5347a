@@ -1,0 +1,457 @@
+---
+title: Image embeddings
+description: Learn how to generate embeddings from images using Voyage AI multimodal models
+---
+
+Image embeddings convert visual content into dense vector representations that capture semantic information. You can use Voyage AI's multimodal models to power visual search, image classification, and content-based recommendations.
+
+## Overview
+
+Voyage AI's `voyage-multimodal-3` model supports generating embeddings from:
+- Single images
+- Multiple images combined into one embedding
+- Images in various formats (URLs and base64)
+
+<Note>
+Image embeddings use the same multimodal model as text embeddings. Use `imageEmbeddingModel()` to create a model instance specifically for image inputs.
+</Note>
+
+## Basic usage
+
+Generate an embedding for a single image:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embed } from 'ai';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const { embedding } = await embed({
+  model: voyage.imageEmbeddingModel('voyage-multimodal-3'),
+  value: 'https://i.ibb.co/r5w8hG8/beach2.jpg',
+});
+
+console.log(`Generated embedding with ${embedding.length} dimensions`);
+```
+
+## Image formats
+
+You can provide images in two formats:
+
+<Tabs items={['URL', 'Base64']}>
+
+<Tab value="URL">
+
+### Using image URLs
+
+Provide direct URLs to publicly accessible images:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embedMany } from 'ai';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const { embeddings } = await embedMany({
+  model: voyage.imageEmbeddingModel('voyage-multimodal-3'),
+  values: [
+    'https://i.ibb.co/nQNGqL0/beach1.jpg',
+    'https://i.ibb.co/r5w8hG8/beach2.jpg',
+  ],
+});
+
+console.log(`Generated ${embeddings.length} embeddings`);
+```
+
+<Tip>
+Using URLs is simpler and reduces payload size, but requires images to be publicly accessible.
+</Tip>
+
+</Tab>
+
+<Tab value="Base64">
+
+### Using base64-encoded images
+
+Convert images to base64 format for direct embedding:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embed } from 'ai';
+
+// Helper function to convert image URL to base64
+const getBase64Image = async (url: string) => {
+  const response = await fetch(url);
+  const arrayBuffer = await response.arrayBuffer();
+  const base64 = Buffer.from(arrayBuffer).toString('base64');
+  return `data:image/jpeg;base64,${base64}`;
+};
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const { embedding } = await embed({
+  model: voyage.imageEmbeddingModel('voyage-multimodal-3'),
+  value: await getBase64Image('https://i.ibb.co/r5w8hG8/beach2.jpg'),
+});
+
+console.log('Embedding generated from base64 image');
+```
+
+<Tip>
+Use base64 encoding for private images or when you need to include image data directly in your requests.
+</Tip>
+
+</Tab>
+
+</Tabs>
+
+## Multiple images per embedding
+
+Combine multiple images into a single embedding to represent related visual content:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embedMany } from 'ai';
+import type { ImageEmbeddingInput } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const { embeddings } = await embedMany<ImageEmbeddingInput>({
+  model: voyage.imageEmbeddingModel('voyage-multimodal-3'),
+  values: [
+    {
+      image: [
+        'https://i.ibb.co/nQNGqL0/beach1.jpg',
+        'https://i.ibb.co/r5w8hG8/beach2.jpg',
+      ],
+    },
+  ],
+});
+
+console.log(`Combined ${embeddings[0].length} dimension embedding`);
+```
+
+<Note>
+Combining multiple images creates a single embedding that represents all images together, useful for collections or multi-view representations.
+</Note>
+
+## Batch processing
+
+Generate embeddings for multiple images efficiently:
+
+<CodeGroup>
+
+```typescript Single images
+import { createVoyage } from '@ai-sdk/voyage';
+import { embedMany } from 'ai';
+import type { ImageEmbeddingInput } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const { embeddings } = await embedMany<ImageEmbeddingInput>({
+  model: voyage.imageEmbeddingModel('voyage-multimodal-3'),
+  values: [
+    { image: 'https://i.ibb.co/nQNGqL0/beach1.jpg' },
+    { image: 'https://i.ibb.co/r5w8hG8/beach2.jpg' },
+  ],
+});
+
+for (const [index, embedding] of embeddings.entries()) {
+  console.log(`Image ${index + 1}: ${embedding.length} dimensions`);
+}
+```
+
+```typescript Multiple images
+import { createVoyage } from '@ai-sdk/voyage';
+import { embedMany } from 'ai';
+import type { ImageEmbeddingInput } from '@ai-sdk/voyage';
+
+const getBase64Image = async (url: string) => {
+  const response = await fetch(url);
+  const arrayBuffer = await response.arrayBuffer();
+  const base64 = Buffer.from(arrayBuffer).toString('base64');
+  return `data:image/jpeg;base64,${base64}`;
+};
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const { embeddings } = await embedMany<ImageEmbeddingInput>({
+  model: voyage.imageEmbeddingModel('voyage-multimodal-3'),
+  values: [
+    {
+      image: [
+        'https://i.ibb.co/nQNGqL0/beach1.jpg',
+        await getBase64Image('https://i.ibb.co/r5w8hG8/beach2.jpg'),
+      ],
+    },
+    {
+      image: ['https://i0.wp.com/blog.voyageai.com/wp-content/uploads/2024/11/Slide-1.png'],
+    },
+  ],
+});
+
+for (const [index, embedding] of embeddings.entries()) {
+  console.log(`Embedding ${index + 1}: ${embedding.length} dimensions`);
+}
+```
+
+</CodeGroup>
+
+## Input format options
+
+The image embedding model accepts several input formats:
+
+<Steps>
+
+### Simple string format
+
+Pass image URLs or base64 strings directly:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embedMany } from 'ai';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const { embeddings } = await embedMany({
+  model: voyage.imageEmbeddingModel('voyage-multimodal-3'),
+  values: [
+    'https://i.ibb.co/nQNGqL0/beach1.jpg',
+    'https://i.ibb.co/r5w8hG8/beach2.jpg',
+  ],
+});
+```
+
+### Object format with single image
+
+Use the object format for clarity:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embedMany } from 'ai';
+import type { ImageEmbeddingInput } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const { embeddings } = await embedMany<ImageEmbeddingInput>({
+  model: voyage.imageEmbeddingModel('voyage-multimodal-3'),
+  values: [
+    { image: 'https://i.ibb.co/nQNGqL0/beach1.jpg' },
+    { image: 'https://i.ibb.co/r5w8hG8/beach2.jpg' },
+  ],
+});
+```
+
+### Object format with multiple images
+
+Combine multiple images into one embedding:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embedMany } from 'ai';
+import type { ImageEmbeddingInput } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const { embeddings } = await embedMany<ImageEmbeddingInput>({
+  model: voyage.imageEmbeddingModel('voyage-multimodal-3'),
+  values: [
+    {
+      image: [
+        'https://i.ibb.co/nQNGqL0/beach1.jpg',
+        'https://i.ibb.co/r5w8hG8/beach2.jpg',
+      ],
+    },
+  ],
+});
+```
+
+</Steps>
+
+## Configuration options
+
+Customize image embedding behavior with provider options:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embed } from 'ai';
+import type { VoyageMultimodalEmbeddingOptions } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const { embedding } = await embed({
+  model: voyage.imageEmbeddingModel('voyage-multimodal-3'),
+  value: 'https://i.ibb.co/r5w8hG8/beach2.jpg',
+  providerOptions: {
+    voyage: {
+      inputType: 'document',
+      truncation: true,
+    } satisfies VoyageMultimodalEmbeddingOptions,
+  },
+});
+```
+
+### Available options
+
+<Accordion title="inputType">
+
+Type of the input. Defaults to `"query"`.
+
+When specified, Voyage automatically prepends a prompt before vectorizing:
+- `query` - "Represent the query for retrieving supporting documents: "
+- `document` - "Represent the document for retrieval: "
+
+Use this for retrieval/search tasks to optimize embedding quality.
+
+</Accordion>
+
+<Accordion title="outputEncoding">
+
+The data type for output embeddings. Defaults to `null`.
+
+- `null` (default) - Embeddings as a list of floating-point numbers
+- `base64` - Base64-encoded NumPy array of single-precision floats
+
+See [output data types FAQ](https://docs.voyageai.com/docs/faq#what-is-quantization-and-output-data-types) for details.
+
+</Accordion>
+
+<Accordion title="truncation">
+
+Whether to truncate inputs to fit within the context length. Defaults to `true`.
+
+Set to `false` to raise an error instead of truncating when inputs exceed limits.
+
+</Accordion>
+
+## Use cases
+
+<CardGroup cols={2}>
+  <Card title="Visual search" icon="magnifying-glass">
+    Find similar images by comparing embeddings
+  </Card>
+  <Card title="Image classification" icon="tags">
+    Categorize images based on semantic content
+  </Card>
+  <Card title="Content moderation" icon="shield">
+    Detect inappropriate or harmful visual content
+  </Card>
+  <Card title="Recommendation systems" icon="sparkles">
+    Suggest related images based on visual similarity
+  </Card>
+</CardGroup>
+
+## Working with usage data
+
+The embedding response includes token usage for images:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embedMany } from 'ai';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const result = await embedMany({
+  model: voyage.imageEmbeddingModel('voyage-multimodal-3'),
+  values: [
+    'https://i.ibb.co/nQNGqL0/beach1.jpg',
+    'https://i.ibb.co/r5w8hG8/beach2.jpg',
+  ],
+});
+
+console.log(`Generated ${result.embeddings.length} embeddings`);
+console.log(`Tokens used: ${result.usage?.tokens}`);
+```
+
+<Note>
+Image tokens are calculated based on pixel count and processing requirements.
+</Note>
+
+## Error handling
+
+Handle errors when processing images:
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+import { embed } from 'ai';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+try {
+  const { embedding } = await embed({
+    model: voyage.imageEmbeddingModel('voyage-multimodal-3'),
+    value: 'https://example.com/image.jpg',
+  });
+  
+  console.log('Image embedding generated successfully');
+} catch (error) {
+  console.error('Failed to generate image embedding:', error);
+}
+```
+
+<Warning>
+The maximum batch size is 128 embeddings per call. For large image collections, split into multiple requests.
+</Warning>
+
+## Best practices
+
+<Steps>
+
+### Optimize image size
+
+Resize large images before encoding to reduce processing time and costs while maintaining quality.
+
+### Use URLs when possible
+
+Prefer image URLs over base64 encoding to reduce request payload size and improve performance.
+
+### Batch processing
+
+Use `embedMany` to process multiple images in a single API call for better efficiency.
+
+### Handle different formats
+
+Support both URL and base64 formats in your application to accommodate different use cases.
+
+</Steps>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Multimodal embeddings" icon="layer-group" href="/guides/multimodal-embeddings">
+    Combine text and images in a single embedding
+  </Card>
+  <Card title="Text embeddings" icon="font" href="/guides/text-embeddings">
+    Learn about text embedding models
+  </Card>
+  <Card title="Configuration" icon="gear" href="/guides/configuration">
+    Customize provider settings
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/embeddings/image-embedding-model">
+    Explore the complete API
+  </Card>
+</CardGroup>

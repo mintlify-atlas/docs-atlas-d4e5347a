@@ -1,0 +1,277 @@
+---
+title: Reranking models
+description: Learn about Voyage AI's reranking models for improving search result relevance
+---
+
+Reranking models help improve search results by reordering documents based on their relevance to a query. Use them as a second-stage ranking system after initial retrieval to significantly boost accuracy.
+
+## Available models
+
+| Model | Query token limit | Query + document limit | Model ID |
+| --- | --- | --- | --- |
+| Rerank 2.5 | 8,000 tokens | 32,000 tokens | `rerank-2.5` |
+| Rerank 2.5 Lite | 8,000 tokens | 32,000 tokens | `rerank-2.5-lite` |
+| Rerank 2 | 4,000 tokens | 16,000 tokens | `rerank-2` |
+| Rerank Lite 2 | 2,000 tokens | 8,000 tokens | `rerank-lite-2` |
+| Rerank 1 | 2,000 tokens | 8,000 tokens | `rerank-1` |
+| Rerank Lite 1 | 1,000 tokens | 4,000 tokens | `rerank-lite-1` |
+
+<Tip>
+Use `rerank-2.5` or `rerank-2.5-lite` for the best performance and accuracy. These models support longer contexts and provide superior ranking quality.
+</Tip>
+
+## Usage example
+
+You can create a reranking model using the `voyage.reranking()` method:
+
+```typescript
+import { voyage } from 'voyage-ai-provider';
+import { rerank } from 'ai';
+
+const rerankingModel = voyage.reranking('rerank-2.5');
+
+const result = await rerank({
+  model: rerankingModel,
+  query: 'What causes rain?',
+  documents: [
+    'Sunny day at the beach with clear skies',
+    'Rainy day in the city with heavy precipitation',
+    'Snowy mountain peak in winter',
+    'Cloudy weather with chance of rain',
+  ],
+  topN: 2,
+});
+
+// result.data contains the top 2 most relevant documents
+// Each item has: index, relevanceScore, and optionally the document text
+```
+
+## Model settings
+
+You can customize reranking behavior using provider options:
+
+```typescript
+import { voyage, type VoyageRerankingOptions } from 'voyage-ai-provider';
+import { rerank } from 'ai';
+
+const result = await rerank({
+  model: voyage.reranking('rerank-2.5'),
+  query: 'talk about rain',
+  documents: [
+    'sunny day at the beach',
+    'rainy day in the city',
+    'snowy mountain peak',
+  ],
+  topN: 2,
+  providerOptions: {
+    voyage: {
+      returnDocuments: true,
+      truncation: true,
+    } satisfies VoyageRerankingOptions,
+  },
+});
+```
+
+### Available settings
+
+<ParamField path="returnDocuments" type="boolean" default="false">
+  Whether to include the document text in the response.
+  
+  - When `false`: Returns `{index, relevanceScore}` for each result
+  - When `true`: Returns `{index, document, relevanceScore}` for each result
+  
+  Set to `true` when you need to access the document content without maintaining a separate lookup.
+</ParamField>
+
+<ParamField path="truncation" type="boolean" default="true">
+  Whether to automatically truncate inputs to fit within the context length limits.
+  
+  When `true`, queries and documents are truncated to fit within the model's token limits. When `false`, an error is raised if inputs exceed the limits.
+  
+  <Note>
+  Token limits vary by model:
+  - `rerank-2.5` and `rerank-2.5-lite`: Query max 8,000 tokens, combined max 32,000 tokens
+  - `rerank-2`: Query max 4,000 tokens, combined max 16,000 tokens
+  - `rerank-lite-2` and `rerank-1`: Query max 2,000 tokens, combined max 8,000 tokens
+  - `rerank-lite-1`: Query max 1,000 tokens, combined max 4,000 tokens
+  </Note>
+</ParamField>
+
+## Choosing the right model
+
+### High-performance applications
+
+- **rerank-2.5**: Best overall accuracy and supports long contexts up to 32,000 tokens
+- **rerank-2.5-lite**: Faster inference with similar quality to rerank-2.5, ideal for latency-sensitive applications
+
+### Standard applications
+
+- **rerank-2**: Good balance of performance and cost for moderate context lengths
+- **rerank-lite-2**: Lighter model for faster reranking with shorter documents
+
+### Legacy models
+
+- **rerank-1**: Earlier generation model (consider upgrading to rerank-2.5)
+- **rerank-lite-1**: Lightweight legacy model with limited context (consider upgrading to rerank-2.5-lite)
+
+<Warning>
+Older models (rerank-2, rerank-lite-2, rerank-1, rerank-lite-1) may have lower performance compared to the latest rerank-2.5 series. Upgrade to rerank-2.5 or rerank-2.5-lite for best results.
+</Warning>
+
+## How reranking works
+
+Reranking is typically used as part of a two-stage retrieval pipeline:
+
+1. **Initial retrieval**: Use embedding-based search to retrieve candidate documents (e.g., top 100)
+2. **Reranking**: Use a reranking model to reorder the candidates and return the most relevant results (e.g., top 10)
+
+This approach combines the speed of embedding search with the accuracy of cross-attention reranking models.
+
+```typescript
+import { voyage } from 'voyage-ai-provider';
+import { embedMany, rerank } from 'ai';
+
+// Step 1: Initial retrieval with embeddings
+const embeddingModel = voyage.textEmbeddingModel('voyage-3');
+const { embeddings: [queryEmbedding] } = await embedMany({
+  model: embeddingModel,
+  values: ['What causes rain?'],
+});
+
+// Find top 100 candidates using vector similarity (your vector DB)
+const candidates = await vectorDB.search(queryEmbedding, { limit: 100 });
+
+// Step 2: Rerank top candidates
+const rerankingModel = voyage.reranking('rerank-2.5');
+const result = await rerank({
+  model: rerankingModel,
+  query: 'What causes rain?',
+  documents: candidates.map(c => c.text),
+  topN: 10,
+});
+
+// result.data now contains the 10 most relevant documents
+```
+
+## Use cases
+
+### Semantic search
+
+Improve search result quality by reranking initial retrieval results:
+
+```typescript
+const searchResults = await rerank({
+  model: voyage.reranking('rerank-2.5'),
+  query: userQuery,
+  documents: initialResults,
+  topN: 10,
+});
+```
+
+### Question answering
+
+Find the most relevant context for answering questions:
+
+```typescript
+const relevantContext = await rerank({
+  model: voyage.reranking('rerank-2.5'),
+  query: 'How do I reset my password?',
+  documents: knowledgeBaseArticles,
+  topN: 3,
+  providerOptions: {
+    voyage: {
+      returnDocuments: true,
+    },
+  },
+});
+
+// Use top 3 articles as context for answer generation
+const context = relevantContext.data
+  .map(item => item.document)
+  .join('\n\n');
+```
+
+### Content recommendation
+
+Rank content items by relevance to user interests:
+
+```typescript
+const recommendations = await rerank({
+  model: voyage.reranking('rerank-2.5-lite'),
+  query: userProfile.interests.join(' '),
+  documents: contentPool.map(item => item.description),
+  topN: 20,
+});
+```
+
+## Best practices
+
+### Optimize the number of candidates
+
+Reranking is more expensive than embedding similarity. Balance accuracy and cost:
+
+- Retrieve 50-200 candidates with embeddings
+- Rerank to get the final 5-20 results
+
+```typescript
+// Good: Rerank top 100 to get top 10
+const results = await rerank({
+  model: rerankingModel,
+  query: query,
+  documents: top100Candidates,
+  topN: 10,
+});
+
+// Wasteful: Reranking thousands of documents
+// Use embedding search first to narrow down candidates
+```
+
+### Handle truncation appropriately
+
+For critical applications, disable truncation and handle errors explicitly:
+
+```typescript
+try {
+  const results = await rerank({
+    model: voyage.reranking('rerank-2.5'),
+    query: longQuery,
+    documents: longDocuments,
+    topN: 10,
+    providerOptions: {
+      voyage: {
+        truncation: false,
+      },
+    },
+  });
+} catch (error) {
+  // Handle token limit errors
+  // Maybe split documents or shorten query
+}
+```
+
+### Choose topN wisely
+
+The `topN` parameter determines how many results to return:
+
+- For user-facing search: 10-20 results
+- For RAG context: 3-5 results
+- For re-ranking pipeline: 20-50 results for further processing
+
+<Tip>
+Set `topN` based on your downstream use case. Don't return more results than you'll actually use, as this increases latency and cost.
+</Tip>
+
+### Model selection by context length
+
+Choose your model based on your typical query and document lengths:
+
+```typescript
+// Long documents or queries (up to 32K tokens)
+const longContextModel = voyage.reranking('rerank-2.5');
+
+// Medium length (up to 16K tokens)
+const mediumContextModel = voyage.reranking('rerank-2');
+
+// Short, fast queries (up to 8K tokens)
+const shortContextModel = voyage.reranking('rerank-lite-2');
+```

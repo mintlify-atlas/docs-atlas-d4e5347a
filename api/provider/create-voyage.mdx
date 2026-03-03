@@ -1,0 +1,95 @@
+---
+title: createVoyage()
+description: Create a Voyage AI provider instance with custom settings
+---
+
+Creates a Voyage AI provider instance with optional configuration settings. You can customize the API key, base URL, headers, and fetch implementation.
+
+## Import
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+```
+
+## Parameters
+
+<ParamField path="options" type="VoyageProviderSettings" optional>
+  Configuration options for the Voyage provider
+
+  <ParamField path="options.apiKey" type="string" optional>
+    API key for authenticating with the Voyage AI API. Defaults to the `VOYAGE_API_KEY` environment variable.
+  </ParamField>
+
+  <ParamField path="options.baseURL" type="string" optional>
+    Base URL for API calls. Use this to configure proxy servers or custom endpoints. Defaults to `https://api.voyageai.com/v1`.
+  </ParamField>
+
+  <ParamField path="options.headers" type="Record<string, string>" optional>
+    Custom headers to include in all requests.
+  </ParamField>
+
+  <ParamField path="options.fetch" type="FetchFunction" optional>
+    Custom fetch implementation. Use this as middleware to intercept requests or provide a custom fetch for testing.
+  </ParamField>
+</ParamField>
+
+## Returns
+
+<ResponseField name="provider" type="VoyageProvider">
+  A Voyage provider instance that implements the Vercel AI SDK provider interface. The provider can be called as a function or you can use its methods to create specific model types.
+</ResponseField>
+
+## Examples
+
+### Basic usage with environment variable
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+
+const voyage = createVoyage();
+```
+
+### Custom API key
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+```
+
+### Custom base URL with proxy
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  baseURL: 'https://my-proxy.example.com/voyage',
+});
+```
+
+### Custom headers
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  headers: {
+    'X-Custom-Header': 'value',
+  },
+});
+```
+
+### Custom fetch for testing
+
+```typescript
+import { createVoyage } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  fetch: async (url, options) => {
+    console.log('Request:', url, options);
+    return fetch(url, options);
+  },
+});
+```

@@ -1,0 +1,238 @@
+---
+title: imageEmbeddingModel()
+description: Create a Voyage image embedding model instance
+---
+
+Creates an image embedding model instance that generates embeddings for image inputs using Voyage AI's multimodal models configured for image-only processing.
+
+```ts
+import { voyage } from '@ai-sdk/voyage';
+
+const model = voyage.imageEmbeddingModel('voyage-multimodal-3');
+```
+
+## Parameters
+
+<ParamField path="modelId" type="VoyageMultimodalEmbeddingModelId" required>
+  The identifier of the multimodal embedding model to use.
+
+  **Available models:**
+  - `voyage-multimodal-3` - Third generation multimodal model
+</ParamField>
+
+## Returns
+
+<ResponseField name="EmbeddingModelV3" type="object">
+  An image embedding model instance that implements the AI SDK's `EmbeddingModelV3` interface.
+
+  <ResponseField name="modelId" type="string">
+    The model identifier passed during creation
+  </ResponseField>
+
+  <ResponseField name="provider" type="string">
+    The provider identifier: `"voyage.image.embedding"`
+  </ResponseField>
+
+  <ResponseField name="maxEmbeddingsPerCall" type="number">
+    Maximum number of inputs per API call: `128`
+  </ResponseField>
+
+  <ResponseField name="supportsParallelCalls" type="boolean">
+    Whether parallel calls are supported: `false`
+  </ResponseField>
+</ResponseField>
+
+## Input types
+
+The image embedding model accepts `ImageEmbeddingInput` which can be:
+
+- **Single image**: `string` - A single image URL or base64-encoded image
+- **Multiple images**: `string[]` - Array of images combined into one embedding
+- **Object format**: `{ image: string | string[] }` - Alternative format with explicit image property
+
+### Image formats
+
+Images can be provided as:
+
+- **URL**: `https://example.com/image.jpg` (must have image extension: .jpg, .jpeg, .png, .gif, .bmp, .webp, .svg)
+- **Base64**: `data:image/jpeg;base64,/9j/4AAQSkZJRg...` (data URI with base64 encoding)
+
+## Usage examples
+
+### Generate single image embedding
+
+Embed a single image to generate one embedding vector.
+
+```ts
+import { voyage } from '@ai-sdk/voyage';
+import { embed } from 'ai';
+
+const { embedding } = await embed({
+  model: voyage.imageEmbeddingModel('voyage-multimodal-3'),
+  value: 'https://i.ibb.co/nQNGqL0/beach1.jpg',
+});
+
+console.log(`Embedding length: ${embedding.length}`);
+```
+
+### Generate multiple image embeddings
+
+Embed multiple images to generate separate embedding vectors.
+
+```ts
+import { voyage } from '@ai-sdk/voyage';
+import { embedMany } from 'ai';
+
+const { embeddings } = await embedMany({
+  model: voyage.imageEmbeddingModel('voyage-multimodal-3'),
+  values: [
+    'https://i.ibb.co/nQNGqL0/beach1.jpg',
+    'https://i.ibb.co/r5w8hG8/beach2.jpg',
+  ],
+});
+
+for (const [index, embedding] of embeddings.entries()) {
+  console.log(`Embedding ${index}: length ${embedding.length}`);
+}
+```
+
+### Use base64-encoded images
+
+You can embed images encoded as base64 data URIs.
+
+```ts
+import { voyage } from '@ai-sdk/voyage';
+import { embed } from 'ai';
+
+const getBase64Image = async (url: string) => {
+  const response = await fetch(url);
+  const arrayBuffer = await response.arrayBuffer();
+  const base64 = Buffer.from(arrayBuffer).toString('base64');
+  return `data:image/jpeg;base64,${base64}`;
+};
+
+const { embedding } = await embed({
+  model: voyage.imageEmbeddingModel('voyage-multimodal-3'),
+  value: await getBase64Image('https://i.ibb.co/r5w8hG8/beach2.jpg'),
+});
+```
+
+### Use object format
+
+You can use the object format with explicit image property.
+
+```ts
+import { voyage } from '@ai-sdk/voyage';
+import { embedMany } from 'ai';
+
+const { embeddings } = await embedMany({
+  model: voyage.imageEmbeddingModel('voyage-multimodal-3'),
+  values: [
+    {
+      image: 'https://i.ibb.co/nQNGqL0/beach1.jpg',
+    },
+    {
+      image: await getBase64Image('https://i.ibb.co/r5w8hG8/beach2.jpg'),
+    },
+  ],
+});
+```
+
+### Combine multiple images into one embedding
+
+You can combine multiple images into a single embedding by passing an array. This is useful for representing related images as a single vector.
+
+```ts
+import { voyage } from '@ai-sdk/voyage';
+import { embedMany } from 'ai';
+
+const { embeddings } = await embedMany({
+  model: voyage.imageEmbeddingModel('voyage-multimodal-3'),
+  values: [
+    {
+      image: [
+        'https://i.ibb.co/nQNGqL0/beach1.jpg',
+        'https://i.ibb.co/r5w8hG8/beach2.jpg',
+      ],
+    },
+  ],
+});
+
+console.log(`Generated ${embeddings.length} embedding(s)`);
+```
+
+### Multiple embeddings with multiple images
+
+Generate multiple embeddings, each combining multiple images.
+
+```ts
+import { voyage } from '@ai-sdk/voyage';
+import { embedMany } from 'ai';
+
+const { embeddings } = await embedMany({
+  model: voyage.imageEmbeddingModel('voyage-multimodal-3'),
+  values: [
+    {
+      image: [
+        'https://i.ibb.co/nQNGqL0/beach1.jpg',
+        'https://i.ibb.co/r5w8hG8/beach2.jpg',
+      ],
+    },
+    {
+      image: [
+        'https://i0.wp.com/blog.voyageai.com/wp-content/uploads/2024/11/Slide-1.png',
+      ],
+    },
+  ],
+});
+
+console.log(`Generated ${embeddings.length} embeddings`);
+```
+
+### Use provider options
+
+You can customize the embedding behavior using provider-specific options.
+
+```ts
+import { voyage } from '@ai-sdk/voyage';
+import { embed } from 'ai';
+import type { VoyageMultimodalEmbeddingOptions } from '@ai-sdk/voyage';
+
+const { embedding } = await embed({
+  model: voyage.imageEmbeddingModel('voyage-multimodal-3'),
+  value: 'https://i.ibb.co/nQNGqL0/beach1.jpg',
+  providerOptions: {
+    voyage: {
+      inputType: 'document',
+      truncation: true,
+    } satisfies VoyageMultimodalEmbeddingOptions,
+  },
+});
+```
+
+## Provider options
+
+You can pass Voyage-specific options through the `providerOptions` parameter:
+
+<ParamField path="providerOptions.voyage.inputType" type="'query' | 'document'">
+  The input type for the embeddings. Defaults to `"query"`.
+
+  When specified, Voyage automatically prepends a prompt to your inputs before vectorizing them, creating vectors more tailored for retrieval/search tasks.
+
+  - `query`: Prepends "Represent the query for retrieving supporting documents: "
+  - `document`: Prepends "Represent the document for retrieval: "
+
+  For retrieval/search purposes where a query is used to search through documents, we recommend specifying whether your inputs are queries or documents.
+</ParamField>
+
+<ParamField path="providerOptions.voyage.outputEncoding" type="'base64'">
+  The data type for the resulting output embeddings.
+
+  If not specified (defaults to null), the embeddings are represented as a list of floating-point numbers.
+
+  If `'base64'`, the embeddings are represented as a Base64-encoded NumPy array of single-precision floats.
+</ParamField>
+
+<ParamField path="providerOptions.voyage.truncation" type="boolean">
+  Whether to truncate the input to fit within the context length. Defaults to `true`.
+</ParamField>

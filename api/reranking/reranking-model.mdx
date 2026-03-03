@@ -1,0 +1,90 @@
+---
+title: reranking()
+description: Create a reranking model instance
+---
+
+## `voyage.reranking(modelId)`
+
+Create a Voyage AI reranking model instance. This method is an alias for `rerankingModel()`.
+
+<ParamField path="modelId" type="string" required>
+  The model ID to use for reranking. Available models:
+  - `rerank-2.5`
+  - `rerank-2.5-lite`
+  - `rerank-2`
+  - `rerank-lite-2`
+  - `rerank-1`
+  - `rerank-lite-1`
+</ParamField>
+
+<ResponseField name="rerankingModel" type="RerankingModelV3">
+  A reranking model instance that can be used with the `rerank()` function from the Vercel AI SDK.
+</ResponseField>
+
+## Example
+
+```typescript
+import { rerank } from 'ai';
+import { createVoyage } from '@ai-sdk/voyage';
+
+const voyage = createVoyage({
+  apiKey: process.env.VOYAGE_API_KEY,
+});
+
+const result = await rerank({
+  model: voyage.reranking('rerank-2.5'),
+  documents: ['sunny day at the beach', 'rainy day in the city'],
+  topN: 1,
+  query: 'talk about rain',
+  providerOptions: {
+    voyage: {
+      returnDocuments: true,
+      truncation: true,
+    },
+  },
+});
+
+console.log('Reranking:', result.ranking);
+```
+
+## Provider options
+
+You can pass Voyage-specific reranking options using the `providerOptions` parameter:
+
+<ParamField path="providerOptions.voyage.returnDocuments" type="boolean" default="false">
+  Whether to return the documents in the response.
+
+  If `false`, the API returns a list of `{"index", "relevanceScore"}` where `index` refers to the index of a document within the input list.
+
+  If `true`, the API returns a list of `{"index", "document", "relevanceScore"}` where `document` is the corresponding document from the input list.
+</ParamField>
+
+<ParamField path="providerOptions.voyage.truncation" type="boolean" default="true">
+  Whether to truncate the input to satisfy the context length limit on the query and the documents.
+
+  If `true`, the query and documents are truncated to fit within the context length limit before being processed by the reranker model.
+
+  If `false`, an error is raised when the query exceeds:
+  - 8,000 tokens for `rerank-2.5` and `rerank-2.5-lite`
+  - 4,000 tokens for `rerank-2`
+  - 2,000 tokens for `rerank-2-lite` and `rerank-1`
+  - 1,000 tokens for `rerank-lite-1`
+
+  Or when the sum of tokens in the query and any single document exceeds:
+  - 32,000 for `rerank-2.5` and `rerank-2.5-lite`
+  - 16,000 for `rerank-2`
+  - 8,000 for `rerank-2-lite` and `rerank-1`
+  - 4,000 for `rerank-lite-1`
+</ParamField>
+
+## `voyage.rerankingModel(modelId)`
+
+Alias for `reranking()`. Creates a Voyage AI reranking model instance.
+
+<ParamField path="modelId" type="string" required>
+  The model ID to use for reranking. See `reranking()` for available models.
+</ParamField>
+
+<ResponseField name="rerankingModel" type="RerankingModelV3">
+  A reranking model instance that can be used with the `rerank()` function from the Vercel AI SDK.
+</ResponseField>

@@ -1,0 +1,331 @@
+---
+title: Embeddings
+description: Learn what embeddings are and how to generate them with Voyage AI
+---
+
+Embeddings are numerical representations of text or images that capture semantic meaning. They enable you to find similar content, build search systems, and power recommendation engines.
+
+## What are embeddings?
+
+An embedding is a vector (array of numbers) that represents the meaning of content. Similar content has similar embeddings, which means you can use mathematical operations to find related items.
+
+For example, the embeddings for "cat" and "kitten" would be closer together than "cat" and "car" because they share semantic meaning.
+
+## Text embeddings
+
+Text embeddings convert text into vectors that capture semantic meaning:
+
+```typescript
+import { voyage } from '@ai-sdk/voyage';
+import { embed } from 'ai';
+
+const { embedding } = await embed({
+  model: voyage('voyage-3'),
+  value: 'The quick brown fox jumps over the lazy dog',
+});
+
+console.log(embedding);
+// [0.123, -0.456, 0.789, ...] (1024 numbers for voyage-3)
+```
+
+### Available text models
+
+Voyage provides several text embedding models:
+
+- `voyage-3.5` - Latest general-purpose model
+- `voyage-3.5-lite` - Faster, more efficient version
+- `voyage-3-large` - Larger model with higher accuracy
+- `voyage-3` - General-purpose embeddings
+- `voyage-3-lite` - Efficient version
+- `voyage-code-3` - Optimized for code
+- `voyage-finance-2` - Specialized for financial text
+- `voyage-multilingual-2` - Supports multiple languages
+- `voyage-law-2` - Legal domain
+
+<Note>
+The model ID type is `VoyageEmbeddingModelId`, which includes all available models plus a string type for custom models.
+</Note>
+
+### Input types
+
+You can specify whether your text is a query or a document. This helps the model generate better embeddings:
+
+```typescript
+import { voyage } from '@ai-sdk/voyage';
+import { embed } from 'ai';
+
+// For search queries
+const { embedding } = await embed({
+  model: voyage('voyage-3'),
+  value: 'how to train a neural network',
+  providerOptions: {
+    voyage: {
+      inputType: 'query',
+    },
+  },
+});
+
+// For documents to be searched
+const { embedding } = await embed({
+  model: voyage('voyage-3'),
+  value: 'Neural networks are trained using backpropagation...',
+  providerOptions: {
+    voyage: {
+      inputType: 'document',
+    },
+  },
+});
+```
+
+<Info>
+The `inputType` parameter adds model-specific prompts:
+- `query`: "Represent the query for retrieving supporting documents: "
+- `document`: "Represent the document for retrieval: "
+</Info>
+
+### Embedding options
+
+The `VoyageEmbeddingOptions` type defines additional configuration:
+
+```typescript
+type VoyageEmbeddingOptions = {
+  /**
+   * Input type: 'query' or 'document'. Defaults to 'query'.
+   */
+  inputType?: 'query' | 'document';
+
+  /**
+   * Number of dimensions in the output embedding.
+   * voyage-code-3 and voyage-3-large support: 2048, 1024, 512, 256
+   */
+  outputDimension?: number;
+
+  /**
+   * Output data type. Defaults to 'float'.
+   * Options: 'float', 'int8', 'uint8', 'binary', 'ubinary'
+   */
+  outputDtype?: 'float' | 'int8' | 'uint8' | 'binary' | 'ubinary';
+
+  /**
+   * Whether to truncate inputs that exceed context length.
+   */
+  truncation?: boolean;
+};
+```
+
+### Customizing dimensions
+
+Some models support different output dimensions:
+
+```typescript
+const { embedding } = await embed({
+  model: voyage('voyage-code-3'),
+  value: 'function add(a, b) { return a + b; }',
+  providerOptions: {
+    voyage: {
+      outputDimension: 512, // Smaller, more efficient
+    },
+  },
+});
+```
+
+<Tip>
+Smaller dimensions (256, 512) use less memory and are faster to compare, while larger dimensions (1024, 2048) capture more nuanced semantic information.
+</Tip>
+
+### Output data types
+
+You can reduce memory usage with quantized embeddings:
+
+```typescript
+const { embedding } = await embed({
+  model: voyage('voyage-code-3'),
+  value: 'const x = 42;',
+  providerOptions: {
+    voyage: {
+      outputDtype: 'int8', // 8-bit integers instead of 32-bit floats
+    },
+  },
+});
+```
+
+<Accordion title="Data type options">
+- **float**: 32-bit floating-point numbers (default)
+- **int8**: 8-bit signed integers (-128 to 127)
+- **uint8**: 8-bit unsigned integers (0 to 255)
+- **binary**: Bit-packed binary values using int8
+- **ubinary**: Bit-packed binary values using uint8
+
+Quantized types use less memory but may reduce precision. The `voyage-code-3` model supports all types.
+</Accordion>
+
+## Multimodal embeddings
+
+Multimodal models can embed both text and images into the same vector space:
+
+```typescript
+import { voyage } from '@ai-sdk/voyage';
+import { embed } from 'ai';
+
+// Embed text
+const textResult = await embed({
+  model: voyage.multimodalEmbeddingModel('voyage-multimodal-3'),
+  value: 'A cat sitting on a mat',
+});
+
+// Embed an image
+const imageResult = await embed({
+  model: voyage.multimodalEmbeddingModel('voyage-multimodal-3'),
+  value: 'https://example.com/cat.jpg',
+});
+
+// Embed mixed content
+const mixedResult = await embed({
+  model: voyage.multimodalEmbeddingModel('voyage-multimodal-3'),
+  value: JSON.stringify({
+    text: ['A cat', 'sitting on a mat'],
+    image: ['https://example.com/cat.jpg'],
+  }),
+});
+```
+
+### Image inputs
+
+You can provide images as URLs or base64-encoded strings:
+
+```typescript
+// URL
+const result1 = await embed({
+  model: voyage.imageEmbeddingModel('voyage-multimodal-3'),
+  value: 'https://example.com/image.jpg',
+});
+
+// Base64
+const result2 = await embed({
+  model: voyage.imageEmbeddingModel('voyage-multimodal-3'),
+  value: 'data:image/jpeg;base64,/9j/4AAQSkZJRg...',
+});
+```
+
+<Note>
+The provider automatically detects whether a string is a URL, base64 image, or plain text based on its format.
+</Note>
+
+## Model implementation
+
+The `VoyageEmbeddingModel` class implements the `EmbeddingModelV3` interface:
+
+```typescript
+class VoyageEmbeddingModel implements EmbeddingModelV3 {
+  readonly specificationVersion = 'v3';
+  readonly modelId: VoyageEmbeddingModelId;
+  readonly provider: string;
+
+  get maxEmbeddingsPerCall(): number {
+    return 128; // Maximum batch size
+  }
+
+  get supportsParallelCalls(): boolean {
+    return false; // Sequential processing only
+  }
+}
+```
+
+### Batch processing
+
+You can embed up to 128 values in a single API call:
+
+```typescript
+import { embedMany } from 'ai';
+
+const { embeddings } = await embedMany({
+  model: voyage('voyage-3'),
+  values: [
+    'First document',
+    'Second document',
+    'Third document',
+    // ... up to 128 total
+  ],
+});
+
+console.log(embeddings.length); // 3
+```
+
+<Info>
+If you provide more than 128 values, the provider throws a `TooManyEmbeddingValuesForCallError`. Split large batches into multiple calls.
+</Info>
+
+## Usage tracking
+
+The embedding response includes token usage information:
+
+```typescript
+const { embedding, usage } = await embed({
+  model: voyage('voyage-3'),
+  value: 'Hello, world!',
+});
+
+console.log(usage);
+// { tokens: 4 }
+```
+
+## Common use cases
+
+### Semantic search
+
+Embed documents once, then find similar ones:
+
+```typescript
+// Embed all documents
+const docs = ['Machine learning...', 'Deep learning...', 'Neural networks...'];
+const { embeddings: docEmbeddings } = await embedMany({
+  model: voyage('voyage-3'),
+  values: docs,
+  providerOptions: { voyage: { inputType: 'document' } },
+});
+
+// Embed the query
+const { embedding: queryEmbedding } = await embed({
+  model: voyage('voyage-3'),
+  value: 'How do neural networks work?',
+  providerOptions: { voyage: { inputType: 'query' } },
+});
+
+// Find most similar (using cosine similarity)
+function cosineSimilarity(a: number[], b: number[]): number {
+  const dotProduct = a.reduce((sum, val, i) => sum + val * b[i], 0);
+  const magA = Math.sqrt(a.reduce((sum, val) => sum + val * val, 0));
+  const magB = Math.sqrt(b.reduce((sum, val) => sum + val * val, 0));
+  return dotProduct / (magA * magB);
+}
+
+const similarities = docEmbeddings.map((docEmb) =>
+  cosineSimilarity(queryEmbedding, docEmb)
+);
+```
+
+### Clustering
+
+Group similar content together:
+
+```typescript
+const items = ['apple', 'car', 'banana', 'truck', 'orange', 'bicycle'];
+const { embeddings } = await embedMany({
+  model: voyage('voyage-3'),
+  values: items,
+});
+
+// Use embeddings with a clustering algorithm
+// (e.g., k-means, hierarchical clustering)
+```
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Reranking" icon="arrows-up-down" href="/concepts/reranking">
+    Improve search results with reranking
+  </Card>
+  <Card title="Models" icon="microchip" href="/models/embedding-models">
+    See all available embedding models
+  </Card>
+</CardGroup>

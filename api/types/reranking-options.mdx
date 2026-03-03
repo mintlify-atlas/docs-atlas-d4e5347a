@@ -1,0 +1,141 @@
+---
+title: VoyageRerankingOptions
+description: Configuration options for reranking models
+---
+
+The `VoyageRerankingOptions` type defines the configuration options you can pass when reranking documents using Voyage AI's reranking models.
+
+## Properties
+
+<ParamField path="returnDocuments" type="boolean" optional>
+  Whether to return the documents in the response.
+  
+  **Default:** `false`
+  
+  - If `false`: The API returns a list of `{"index", "relevance_score"}` where "index" refers to the index of a document within the input list.
+  - If `true`: The API returns a list of `{"index", "document", "relevance_score"}` where "document" is the corresponding document from the input list.
+</ParamField>
+
+<ParamField path="truncation" type="boolean" optional>
+  Whether to truncate the input to satisfy the "context length limit" on the query and the documents.
+  
+  **Default:** `true`
+  
+  - If `true`: The query and documents are truncated to fit within the context length limit before being processed by the reranker model.
+  - If `false`: An error is raised when:
+    - The query exceeds the token limit:
+      - 8,000 tokens for `rerank-2.5` and `rerank-2.5-lite`
+      - 4,000 tokens for `rerank-2`
+      - 2,000 tokens for `rerank-2-lite` and `rerank-1`
+      - 1,000 tokens for `rerank-lite-1`
+    - The sum of tokens in the query and any single document exceeds:
+      - 32,000 for `rerank-2.5` and `rerank-2.5-lite`
+      - 16,000 for `rerank-2`
+      - 8,000 for `rerank-2-lite` and `rerank-1`
+      - 4,000 for `rerank-lite-1`
+</ParamField>
+
+## Usage
+
+### Basic reranking
+
+```typescript
+import { voyage } from '@voyageai/ai-provider';
+
+const result = await voyage.reranking('rerank-2.5').doRerank({
+  query: 'What is machine learning?',
+  documents: [
+    'Machine learning is a subset of artificial intelligence.',
+    'Python is a programming language.',
+    'Neural networks are used in deep learning.',
+  ],
+});
+
+// result.rankings contains [{ index: number, relevanceScore: number }, ...]
+```
+
+### Reranking with document return
+
+```typescript
+import { voyage } from '@voyageai/ai-provider';
+
+const result = await voyage.reranking('rerank-2.5').doRerank({
+  query: 'What is machine learning?',
+  documents: [
+    'Machine learning is a subset of artificial intelligence.',
+    'Python is a programming language.',
+    'Neural networks are used in deep learning.',
+  ],
+  returnDocuments: true,
+});
+
+// result.rankings now contains:
+// [{ index: number, document: string, relevanceScore: number }, ...]
+```
+
+### Reranking without truncation
+
+```typescript
+import { voyage } from '@voyageai/ai-provider';
+
+const result = await voyage.reranking('rerank-2.5').doRerank({
+  query: 'What is machine learning?',
+  documents: [
+    'Machine learning is a subset of artificial intelligence.',
+    'Python is a programming language.',
+  ],
+  truncation: false,
+});
+
+// Throws an error if query or documents exceed token limits
+```
+
+### Semantic search with reranking
+
+```typescript
+import { voyage } from '@voyageai/ai-provider';
+import { embed } from 'ai';
+
+const documents = [
+  'Machine learning is a subset of artificial intelligence.',
+  'Python is a programming language.',
+  'Neural networks are used in deep learning.',
+  'Data science involves analyzing data.',
+  'Cloud computing provides on-demand resources.',
+];
+
+const query = 'artificial intelligence and machine learning';
+
+// First, get initial candidates (e.g., from a vector database)
+// Then rerank them for better relevance
+const result = await voyage.reranking('rerank-2.5').doRerank({
+  query,
+  documents,
+  returnDocuments: true,
+});
+
+// Get top 3 most relevant documents
+const topDocuments = result.rankings
+  .slice(0, 3)
+  .map((ranking: any) => ranking.document);
+
+console.log('Top documents:', topDocuments);
+```
+
+### Using different reranking models
+
+```typescript
+import { voyage } from '@voyageai/ai-provider';
+
+// Use the lite model for faster, lower-cost reranking
+const litResult = await voyage.reranking('rerank-2.5-lite').doRerank({
+  query: 'What is AI?',
+  documents: ['Document 1', 'Document 2', 'Document 3'],
+});
+
+// Use the standard model for higher quality
+const standardResult = await voyage.reranking('rerank-2.5').doRerank({
+  query: 'What is AI?',
+  documents: ['Document 1', 'Document 2', 'Document 3'],
+});
+```

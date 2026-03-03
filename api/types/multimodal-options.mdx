@@ -1,0 +1,155 @@
+---
+title: VoyageMultimodalEmbeddingOptions
+description: Configuration options for multimodal embedding models
+---
+
+The `VoyageMultimodalEmbeddingOptions` type defines the configuration options you can pass when generating embeddings with multimodal embedding models that support both text and images.
+
+## Properties
+
+<ParamField path="inputType" type="'query' | 'document'" optional>
+  Type of the input.
+  
+  **Default:** `query`
+  
+  When `inputType` is specified as `query` or `document`, Voyage automatically prepends a prompt to your inputs before vectorizing them, creating vectors more tailored for retrieval/search tasks.
+  
+  For retrieval/search purposes where a query is used to search through documents, we recommend specifying whether your inputs are queries or documents. Since inputs can be multimodal, "queries" and "documents" can be text, images, or an interleaving of both modalities.
+  
+  The following prompts are prepended:
+  - For `query`: "Represent the query for retrieving supporting documents: "
+  - For `document`: "Represent the document for retrieval: "
+</ParamField>
+
+<ParamField path="outputEncoding" type="'base64'" optional>
+  The data type for the resulting output embeddings.
+  
+  **Default:** `null` (embeddings are represented as a list of floating-point numbers)
+  
+  - If `null` (not specified): The embeddings are represented as a list of floating-point numbers.
+  - If `base64`: The embeddings are represented as a Base64-encoded NumPy array of single-precision floats.
+  
+  See [Voyage AI FAQ on quantization](https://docs.voyageai.com/docs/faq#what-is-quantization-and-output-data-types)
+</ParamField>
+
+<ParamField path="truncation" type="boolean" optional>
+  Whether to truncate the input texts to fit within the context length.
+  
+  **Default:** `true`
+</ParamField>
+
+## Usage
+
+### Text-only embedding
+
+```typescript
+import { voyage } from '@voyageai/ai-provider';
+import { embed } from 'ai';
+
+const { embedding } = await embed({
+  model: voyage.multimodalEmbeddingModel('voyage-multimodal-3'),
+  value: 'A beautiful sunset over the ocean',
+  experimental_providerOptions: {
+    voyage: {
+      inputType: 'query',
+    },
+  },
+});
+```
+
+### Image embedding
+
+```typescript
+import { voyage } from '@voyageai/ai-provider';
+import { embed } from 'ai';
+import { readFileSync } from 'fs';
+
+const imageBuffer = readFileSync('./sunset.jpg');
+
+const { embedding } = await embed({
+  model: voyage.imageEmbeddingModel('voyage-multimodal-3'),
+  value: {
+    image: imageBuffer,
+  },
+  experimental_providerOptions: {
+    voyage: {
+      inputType: 'document',
+    },
+  },
+});
+```
+
+### Multimodal embedding with text and image
+
+```typescript
+import { voyage } from '@voyageai/ai-provider';
+import { embed } from 'ai';
+import { readFileSync } from 'fs';
+
+const imageBuffer = readFileSync('./product.jpg');
+
+const { embedding } = await embed({
+  model: voyage.multimodalEmbeddingModel('voyage-multimodal-3'),
+  value: [
+    { type: 'text', text: 'Product specifications:' },
+    { type: 'image', image: imageBuffer },
+  ],
+  experimental_providerOptions: {
+    voyage: {
+      inputType: 'document',
+      truncation: true,
+    },
+  },
+});
+```
+
+### Using base64 encoding
+
+```typescript
+import { voyage } from '@voyageai/ai-provider';
+import { embed } from 'ai';
+import { readFileSync } from 'fs';
+
+const imageBuffer = readFileSync('./image.png');
+
+const { embedding } = await embed({
+  model: voyage.multimodalEmbeddingModel('voyage-multimodal-3'),
+  value: {
+    image: imageBuffer,
+  },
+  experimental_providerOptions: {
+    voyage: {
+      inputType: 'document',
+      outputEncoding: 'base64',
+    },
+  },
+});
+
+// embedding is now a base64-encoded string
+```
+
+### Batch multimodal embeddings
+
+```typescript
+import { voyage } from '@voyageai/ai-provider';
+import { embedMany } from 'ai';
+import { readFileSync } from 'fs';
+
+const image1 = readFileSync('./image1.jpg');
+const image2 = readFileSync('./image2.jpg');
+
+const { embeddings } = await embedMany({
+  model: voyage.multimodalEmbeddingModel('voyage-multimodal-3'),
+  values: [
+    { image: image1 },
+    { image: image2 },
+    'Text-only query',
+  ],
+  experimental_providerOptions: {
+    voyage: {
+      inputType: 'query',
+      truncation: true,
+    },
+  },
+});
+```

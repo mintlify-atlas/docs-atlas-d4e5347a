@@ -1,0 +1,125 @@
+---
+title: VoyageEmbeddingOptions
+description: Configuration options for text embedding models
+---
+
+The `VoyageEmbeddingOptions` type defines the configuration options you can pass when generating embeddings with text embedding models.
+
+## Properties
+
+<ParamField path="inputType" type="'query' | 'document'" optional>
+  The input type for the embeddings.
+  
+  **Default:** `query`
+  
+  Voyage automatically prepends a prompt to your inputs before vectorizing them:
+  - For `query`: "Represent the query for retrieving supporting documents: "
+  - For `document`: "Represent the document for retrieval: "
+</ParamField>
+
+<ParamField path="outputDimension" type="number" optional>
+  The number of dimensions for the resulting output embeddings.
+  
+  **Default:** Model-specific default dimension
+  
+  Supported values vary by model:
+  - `voyage-code-3`: 2048, 1024 (default), 512, 256
+  - `voyage-3-large`: 2048, 1024 (default), 512, 256
+  
+  See [Voyage AI Embeddings documentation](https://docs.voyageai.com/docs/embeddings) for supported values by model.
+</ParamField>
+
+<ParamField path="outputDtype" type="'float' | 'int8' | 'uint8' | 'binary' | 'ubinary'" optional>
+  The data type for the resulting output embeddings.
+  
+  **Default:** `float`
+  
+  - `float`: Each returned embedding is a list of 32-bit (4-byte) single-precision floating-point numbers. Supported by all models.
+  - `int8`: Each returned embedding is a list of 8-bit (1-byte) integers ranging from -128 to 127. Supported by `voyage-code-3`.
+  - `uint8`: Each returned embedding is a list of 8-bit (1-byte) integers ranging from 0 to 255. Supported by `voyage-code-3`.
+  - `binary`: Each returned embedding is a list of 8-bit integers (`int8`) that represent bit-packed, quantized single-bit embedding values. The length of the returned list is 1/8 of `outputDimension`. Uses the offset binary method. Supported by `voyage-code-3`.
+  - `ubinary`: Each returned embedding is a list of 8-bit integers (`uint8`) that represent bit-packed, quantized single-bit embedding values. The length of the returned list is 1/8 of `outputDimension`. Supported by `voyage-code-3`.
+  
+  See [Voyage AI FAQ on quantization](https://docs.voyageai.com/docs/faq#what-is-quantization-and-output-data-types)
+</ParamField>
+
+<ParamField path="truncation" type="boolean" optional>
+  Whether to truncate the input texts to fit within the context length.
+</ParamField>
+
+## Usage
+
+### Basic usage with input type
+
+```typescript
+import { voyage } from '@voyageai/ai-provider';
+import { embed } from 'ai';
+
+const { embedding } = await embed({
+  model: voyage.textEmbeddingModel('voyage-3'),
+  value: 'What is the capital of France?',
+  experimental_providerOptions: {
+    voyage: {
+      inputType: 'query',
+    },
+  },
+});
+```
+
+### Using custom output dimensions
+
+```typescript
+import { voyage } from '@voyageai/ai-provider';
+import { embed } from 'ai';
+
+const { embedding } = await embed({
+  model: voyage.textEmbeddingModel('voyage-code-3'),
+  value: 'function calculateSum(a, b) { return a + b; }',
+  experimental_providerOptions: {
+    voyage: {
+      inputType: 'document',
+      outputDimension: 512,
+    },
+  },
+});
+```
+
+### Using quantized embeddings
+
+```typescript
+import { voyage } from '@voyageai/ai-provider';
+import { embed } from 'ai';
+
+const { embedding } = await embed({
+  model: voyage.textEmbeddingModel('voyage-code-3'),
+  value: 'const greeting = "Hello, World!";',
+  experimental_providerOptions: {
+    voyage: {
+      outputDtype: 'int8',
+      outputDimension: 1024,
+    },
+  },
+});
+```
+
+### Batch embeddings with truncation
+
+```typescript
+import { voyage } from '@voyageai/ai-provider';
+import { embedMany } from 'ai';
+
+const { embeddings } = await embedMany({
+  model: voyage.textEmbeddingModel('voyage-3'),
+  values: [
+    'First document',
+    'Second document',
+    'Third document',
+  ],
+  experimental_providerOptions: {
+    voyage: {
+      inputType: 'document',
+      truncation: true,
+    },
+  },
+});
+```
