@@ -1,0 +1,111 @@
+{
+  "projectType": "sdk-library",
+  "projectName": "Voyage AI Provider",
+  "projectDescription": "A Vercel AI SDK provider for Voyage AI embeddings and reranking models",
+  "theme": "palm",
+  "primaryColor": "#2563eb",
+  "lightColor": "#60a5fa",
+  "darkColor": "#1e40af",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/provider",
+              "concepts/embeddings",
+              "concepts/reranking"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/text-embeddings",
+              "guides/image-embeddings",
+              "guides/multimodal-embeddings",
+              "guides/reranking",
+              "guides/configuration"
+            ]
+          },
+          {
+            "group": "Models",
+            "pages": [
+              "models/embedding-models",
+              "models/multimodal-models",
+              "models/reranking-models"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Provider",
+            "pages": [
+              "api/provider/create-voyage",
+              "api/provider/voyage-instance"
+            ]
+          },
+          {
+            "group": "Embedding Models",
+            "pages": [
+              "api/embeddings/text-embedding-model",
+              "api/embeddings/image-embedding-model",
+              "api/embeddings/multimodal-embedding-model"
+            ]
+          },
+          {
+            "group": "Reranking",
+            "pages": [
+              "api/reranking/reranking-model"
+            ]
+          },
+          {
+            "group": "Types",
+            "pages": [
+              "api/types/provider-settings",
+              "api/types/embedding-options",
+              "api/types/multimodal-options",
+              "api/types/reranking-options"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Text embeddings with Voyage AI models",
+    "Image embeddings with multimodal models",
+    "Multimodal embeddings (text + images)",
+    "Document reranking for improved search",
+    "Full Vercel AI SDK integration",
+    "TypeScript support with type safety",
+    "Flexible configuration options",
+    "Support for multiple model types"
+  ],
+  "publicApiSurface": [
+    "createVoyage(options?: VoyageProviderSettings): VoyageProvider",
+    "voyage: VoyageProvider",
+    "VoyageProvider.textEmbeddingModel(modelId: VoyageEmbeddingModelId): EmbeddingModelV3",
+    "VoyageProvider.imageEmbeddingModel(modelId: VoyageMultimodalEmbeddingModelId): EmbeddingModelV3",
+    "VoyageProvider.multimodalEmbeddingModel(modelId: VoyageMultimodalEmbeddingModelId): EmbeddingModelV3",
+    "VoyageProvider.reranking(modelId: VoyageRerankingModelId): RerankingModelV3",
+    "VoyageEmbeddingOptions",
+    "VoyageMultimodalEmbeddingOptions",
+    "VoyageRerankingOptions",
+    "ImageEmbeddingInput",
+    "MultimodalEmbeddingInput",
+    "TextEmbeddingInput"
+  ]
+}
