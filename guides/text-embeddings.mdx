@@ -24,7 +24,7 @@ Voyage AI offers multiple text embedding models optimized for different use case
 Generate embeddings for a single text input using the `embed` function:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embed } from 'ai';
 
 const voyage = createVoyage({
@@ -44,7 +44,7 @@ console.log(embedding);
 Generate embeddings for multiple texts efficiently using `embedMany`:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embedMany } from 'ai';
 
 const voyage = createVoyage({
@@ -76,9 +76,9 @@ Voyage AI uses different prompts for queries and documents to optimize retrieval
 Use `inputType: 'query'` when embedding search queries:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embed } from 'ai';
-import type { VoyageEmbeddingOptions } from '@ai-sdk/voyage';
+import type { VoyageEmbeddingOptions } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: process.env.VOYAGE_API_KEY,
@@ -104,9 +104,9 @@ The model prepends "Represent the query for retrieving supporting documents: " t
 Use `inputType: 'document'` when embedding documents for retrieval:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embedMany } from 'ai';
-import type { VoyageEmbeddingOptions } from '@ai-sdk/voyage';
+import type { VoyageEmbeddingOptions } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: process.env.VOYAGE_API_KEY,
@@ -138,7 +138,7 @@ The model prepends "Represent the document for retrieval: " to document inputs.
 You can combine multiple related text segments into a single embedding. This is useful for representing complex documents with titles, descriptions, and metadata:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embedMany } from 'ai';
 
 const voyage = createVoyage({
@@ -184,7 +184,7 @@ Grouping related text segments creates richer semantic representations than embe
 Use `voyage-code-3` for code snippets and technical documentation:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embedMany } from 'ai';
 
 const voyage = createVoyage({
@@ -206,7 +206,7 @@ const { embeddings } = await embedMany({
 Use `voyage-multilingual-2` for content in multiple languages:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embedMany } from 'ai';
 
 const voyage = createVoyage({
@@ -233,7 +233,7 @@ const { embeddings } = await embedMany({
 Use `voyage-finance-2` for financial documents:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embedMany } from 'ai';
 
 const voyage = createVoyage({
@@ -257,7 +257,7 @@ const { embeddings } = await embedMany({
 Use `voyage-law-2` for legal content:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embedMany } from 'ai';
 
 const voyage = createVoyage({
@@ -283,9 +283,9 @@ const { embeddings } = await embedMany({
 Customize embedding behavior with provider options:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embed } from 'ai';
-import type { VoyageEmbeddingOptions } from '@ai-sdk/voyage';
+import type { VoyageEmbeddingOptions } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: process.env.VOYAGE_API_KEY,
@@ -354,7 +354,7 @@ Set to `true` to automatically truncate long texts instead of raising an error.
 The embedding response includes token usage information:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embedMany } from 'ai';
 
 const voyage = createVoyage({
@@ -379,7 +379,7 @@ console.log(`Tokens used: ${result.usage?.tokens}`);
 Handle errors gracefully when generating embeddings:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embed } from 'ai';
 
 const voyage = createVoyage({

@@ -32,7 +32,7 @@ Embeddings encode documents independently, while reranking models analyze the qu
 Use the `rerank` function from the AI SDK:
 
 ```typescript
-import { voyage } from '@ai-sdk/voyage';
+import { voyage } from 'voyage-ai-provider';
 import { rerank } from 'ai';
 
 const { ranking } = await rerank({
@@ -268,7 +268,7 @@ Structured documents are converted to JSON strings before being sent to the API.
 Combine embeddings and reranking for optimal search:
 
 ```typescript
-import { voyage } from '@ai-sdk/voyage';
+import { voyage } from 'voyage-ai-provider';
 import { embed, rerank } from 'ai';
 
 // 1. Your document corpus

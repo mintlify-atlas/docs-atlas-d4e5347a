@@ -36,7 +36,7 @@ Use `rerank-2.5` for best quality or `rerank-2.5-lite` for a balance of speed an
 Rerank a list of documents based on their relevance to a query:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { rerank } from 'ai';
 
 const voyage = createVoyage({
@@ -73,7 +73,7 @@ The response contains rankings with indices and relevance scores:
 Return only the top-N most relevant documents using `topN`:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { rerank } from 'ai';
 
 const voyage = createVoyage({
@@ -104,9 +104,9 @@ Only the top-N results are returned, already sorted by relevance score in descen
 Customize reranking behavior with provider options:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { rerank } from 'ai';
-import type { VoyageRerankingOptions } from '@ai-sdk/voyage';
+import type { VoyageRerankingOptions } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: process.env.VOYAGE_API_KEY,
@@ -141,9 +141,9 @@ Whether to return the documents in the response. Defaults to `false`.
 - When `true`: Returns `[{"index", "document", "relevance_score"}]` with the original document text
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { rerank } from 'ai';
-import type { VoyageRerankingOptions } from '@ai-sdk/voyage';
+import type { VoyageRerankingOptions } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: process.env.VOYAGE_API_KEY,
@@ -180,9 +180,9 @@ Context length limits by model:
 - `rerank-lite-1`: 1,000 tokens (query), 4,000 tokens (query + document)
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { rerank } from 'ai';
-import type { VoyageRerankingOptions } from '@ai-sdk/voyage';
+import type { VoyageRerankingOptions } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: process.env.VOYAGE_API_KEY,
@@ -207,9 +207,9 @@ const result = await rerank({
 Here's a comprehensive example combining retrieval and reranking:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embed, embedMany, rerank } from 'ai';
-import type { VoyageEmbeddingOptions, VoyageRerankingOptions } from '@ai-sdk/voyage';
+import type { VoyageEmbeddingOptions, VoyageRerankingOptions } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: process.env.VOYAGE_API_KEY,
@@ -308,7 +308,7 @@ console.log('Final ranking:', ranking);
 Rerank structured data by converting to strings:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { rerank } from 'ai';
 
 const voyage = createVoyage({
@@ -387,7 +387,7 @@ Set `truncation: true` to handle long documents gracefully instead of failing.
 Handle errors during reranking:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { rerank } from 'ai';
 
 const voyage = createVoyage({

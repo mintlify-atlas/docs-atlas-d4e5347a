@@ -8,7 +8,7 @@ The default Voyage AI provider instance. This is a pre-configured instance creat
 ## Import
 
 ```typescript
-import { voyage } from '@ai-sdk/voyage';
+import { voyage } from 'voyage-ai-provider';
 ```
 
 ## Provider methods
@@ -39,7 +39,7 @@ Creates a text embedding model for generating embeddings from text inputs.
 #### Example
 
 ```typescript
-import { voyage } from '@ai-sdk/voyage';
+import { voyage } from 'voyage-ai-provider';
 import { embed, embedMany } from 'ai';
 
 const model = voyage.textEmbeddingModel('voyage-3-lite');
@@ -73,7 +73,7 @@ Creates an image embedding model for generating embeddings from image inputs.
 #### Example
 
 ```typescript
-import { voyage } from '@ai-sdk/voyage';
+import { voyage } from 'voyage-ai-provider';
 import { embedMany } from 'ai';
 
 const model = voyage.imageEmbeddingModel('voyage-multimodal-3');
@@ -116,7 +116,7 @@ Creates a multimodal embedding model for generating embeddings from combined tex
 #### Example
 
 ```typescript
-import { voyage } from '@ai-sdk/voyage';
+import { voyage } from 'voyage-ai-provider';
 import { embed, embedMany } from 'ai';
 
 const model = voyage.multimodalEmbeddingModel('voyage-multimodal-3');
@@ -187,7 +187,7 @@ Creates a reranking model for reordering documents based on relevance to a query
 #### Example
 
 ```typescript
-import { voyage } from '@ai-sdk/voyage';
+import { voyage } from 'voyage-ai-provider';
 import { rerank } from 'ai';
 
 const model = voyage.reranking('rerank-2.5');
@@ -224,7 +224,7 @@ Alias for `reranking()`. Creates a reranking model with identical functionality.
 The provider instance can be called directly as a function, which is equivalent to calling `textEmbeddingModel()`.
 
 ```typescript
-import { voyage } from '@ai-sdk/voyage';
+import { voyage } from 'voyage-ai-provider';
 import { embed } from 'ai';
 
 // These are equivalent

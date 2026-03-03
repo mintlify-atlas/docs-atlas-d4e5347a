@@ -7,29 +7,33 @@ description: Install the Voyage AI Provider for the Vercel AI SDK
 
 Install the Voyage AI Provider package to use Voyage AI models with the Vercel AI SDK.
 
-## Install the package
+## Install the packages
 
-Choose your preferred package manager:
+You need both the Voyage AI Provider and the Vercel AI SDK:
 
 <CodeGroup>
 
 ```bash npm
-npm install voyage-ai-provider
+npm install voyage-ai-provider ai
 ```
 
 ```bash pnpm
-pnpm add voyage-ai-provider
+pnpm add voyage-ai-provider ai
 ```
 
 ```bash yarn
-yarn add voyage-ai-provider
+yarn add voyage-ai-provider ai
 ```
 
 ```bash bun
-bun add voyage-ai-provider
+bun add voyage-ai-provider ai
 ```
 
 </CodeGroup>
+
+<Note>
+The `ai` package provides the core Vercel AI SDK functions like `embed()`, `embedMany()`, and `rerank()` that work with the Voyage AI Provider.
+</Note>
 
 ## Get your API key
 

@@ -16,7 +16,7 @@ For example, the embeddings for "cat" and "kitten" would be closer together than
 Text embeddings convert text into vectors that capture semantic meaning:
 
 ```typescript
-import { voyage } from '@ai-sdk/voyage';
+import { voyage } from 'voyage-ai-provider';
 import { embed } from 'ai';
 
 const { embedding } = await embed({
@@ -51,7 +51,7 @@ The model ID type is `VoyageEmbeddingModelId`, which includes all available mode
 You can specify whether your text is a query or a document. This helps the model generate better embeddings:
 
 ```typescript
-import { voyage } from '@ai-sdk/voyage';
+import { voyage } from 'voyage-ai-provider';
 import { embed } from 'ai';
 
 // For search queries
@@ -164,7 +164,7 @@ Quantized types use less memory but may reduce precision. The `voyage-code-3` mo
 Multimodal models can embed both text and images into the same vector space:
 
 ```typescript
-import { voyage } from '@ai-sdk/voyage';
+import { voyage } from 'voyage-ai-provider';
 import { embed } from 'ai';
 
 // Embed text

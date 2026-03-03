@@ -6,7 +6,7 @@ description: Create a Voyage text embedding model instance
 Creates a text embedding model instance that generates embeddings for text inputs using Voyage AI's text-optimized models.
 
 ```ts
-import { voyage } from '@ai-sdk/voyage';
+import { voyage } from 'voyage-ai-provider';
 
 const model = voyage.textEmbeddingModel('voyage-3-lite');
 ```
@@ -66,7 +66,7 @@ The text embedding model accepts `TextEmbeddingInput` which can be:
 Embed a single text string to generate one embedding vector.
 
 ```ts
-import { voyage } from '@ai-sdk/voyage';
+import { voyage } from 'voyage-ai-provider';
 import { embed } from 'ai';
 
 const { embedding } = await embed({
@@ -82,7 +82,7 @@ console.log(embedding);
 Embed multiple text strings to generate separate embedding vectors.
 
 ```ts
-import { voyage } from '@ai-sdk/voyage';
+import { voyage } from 'voyage-ai-provider';
 import { embedMany } from 'ai';
 
 const { embeddings } = await embedMany({
@@ -104,7 +104,7 @@ for (const [index, embedding] of embeddings.entries()) {
 You can combine multiple text strings into a single embedding by passing an array. This is useful for embedding documents with multiple fields.
 
 ```ts
-import { voyage } from '@ai-sdk/voyage';
+import { voyage } from 'voyage-ai-provider';
 import { embedMany } from 'ai';
 
 const { embeddings } = await embedMany({
@@ -134,9 +134,9 @@ console.log(`Generated ${embeddings.length} embeddings`);
 You can customize the embedding behavior using provider-specific options.
 
 ```ts
-import { voyage } from '@ai-sdk/voyage';
+import { voyage } from 'voyage-ai-provider';
 import { embed } from 'ai';
-import type { VoyageEmbeddingOptions } from '@ai-sdk/voyage';
+import type { VoyageEmbeddingOptions } from 'voyage-ai-provider';
 
 const { embedding } = await embed({
   model: voyage.textEmbeddingModel('voyage-3-lite'),

@@ -21,7 +21,7 @@ Image embeddings use the same multimodal model as text embeddings. Use `imageEmb
 Generate an embedding for a single image:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embed } from 'ai';
 
 const voyage = createVoyage({
@@ -49,7 +49,7 @@ You can provide images in two formats:
 Provide direct URLs to publicly accessible images:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embedMany } from 'ai';
 
 const voyage = createVoyage({
@@ -80,7 +80,7 @@ Using URLs is simpler and reduces payload size, but requires images to be public
 Convert images to base64 format for direct embedding:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embed } from 'ai';
 
 // Helper function to convert image URL to base64
@@ -116,9 +116,9 @@ Use base64 encoding for private images or when you need to include image data di
 Combine multiple images into a single embedding to represent related visual content:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embedMany } from 'ai';
-import type { ImageEmbeddingInput } from '@ai-sdk/voyage';
+import type { ImageEmbeddingInput } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: process.env.VOYAGE_API_KEY,
@@ -150,9 +150,9 @@ Generate embeddings for multiple images efficiently:
 <CodeGroup>
 
 ```typescript Single images
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embedMany } from 'ai';
-import type { ImageEmbeddingInput } from '@ai-sdk/voyage';
+import type { ImageEmbeddingInput } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: process.env.VOYAGE_API_KEY,
@@ -172,9 +172,9 @@ for (const [index, embedding] of embeddings.entries()) {
 ```
 
 ```typescript Multiple images
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embedMany } from 'ai';
-import type { ImageEmbeddingInput } from '@ai-sdk/voyage';
+import type { ImageEmbeddingInput } from 'voyage-ai-provider';
 
 const getBase64Image = async (url: string) => {
   const response = await fetch(url);
@@ -220,7 +220,7 @@ The image embedding model accepts several input formats:
 Pass image URLs or base64 strings directly:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embedMany } from 'ai';
 
 const voyage = createVoyage({
@@ -241,9 +241,9 @@ const { embeddings } = await embedMany({
 Use the object format for clarity:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embedMany } from 'ai';
-import type { ImageEmbeddingInput } from '@ai-sdk/voyage';
+import type { ImageEmbeddingInput } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: process.env.VOYAGE_API_KEY,
@@ -263,9 +263,9 @@ const { embeddings } = await embedMany<ImageEmbeddingInput>({
 Combine multiple images into one embedding:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embedMany } from 'ai';
-import type { ImageEmbeddingInput } from '@ai-sdk/voyage';
+import type { ImageEmbeddingInput } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: process.env.VOYAGE_API_KEY,
@@ -291,9 +291,9 @@ const { embeddings } = await embedMany<ImageEmbeddingInput>({
 Customize image embedding behavior with provider options:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embed } from 'ai';
-import type { VoyageMultimodalEmbeddingOptions } from '@ai-sdk/voyage';
+import type { VoyageMultimodalEmbeddingOptions } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: process.env.VOYAGE_API_KEY,
@@ -366,7 +366,7 @@ Set to `false` to raise an error instead of truncating when inputs exceed limits
 The embedding response includes token usage for images:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embedMany } from 'ai';
 
 const voyage = createVoyage({
@@ -394,7 +394,7 @@ Image tokens are calculated based on pixel count and processing requirements.
 Handle errors when processing images:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embed } from 'ai';
 
 const voyage = createVoyage({

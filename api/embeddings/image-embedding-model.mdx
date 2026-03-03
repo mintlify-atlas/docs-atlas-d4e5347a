@@ -6,7 +6,7 @@ description: Create a Voyage image embedding model instance
 Creates an image embedding model instance that generates embeddings for image inputs using Voyage AI's multimodal models configured for image-only processing.
 
 ```ts
-import { voyage } from '@ai-sdk/voyage';
+import { voyage } from 'voyage-ai-provider';
 
 const model = voyage.imageEmbeddingModel('voyage-multimodal-3');
 ```
@@ -64,7 +64,7 @@ Images can be provided as:
 Embed a single image to generate one embedding vector.
 
 ```ts
-import { voyage } from '@ai-sdk/voyage';
+import { voyage } from 'voyage-ai-provider';
 import { embed } from 'ai';
 
 const { embedding } = await embed({
@@ -80,7 +80,7 @@ console.log(`Embedding length: ${embedding.length}`);
 Embed multiple images to generate separate embedding vectors.
 
 ```ts
-import { voyage } from '@ai-sdk/voyage';
+import { voyage } from 'voyage-ai-provider';
 import { embedMany } from 'ai';
 
 const { embeddings } = await embedMany({
@@ -101,7 +101,7 @@ for (const [index, embedding] of embeddings.entries()) {
 You can embed images encoded as base64 data URIs.
 
 ```ts
-import { voyage } from '@ai-sdk/voyage';
+import { voyage } from 'voyage-ai-provider';
 import { embed } from 'ai';
 
 const getBase64Image = async (url: string) => {
@@ -122,7 +122,7 @@ const { embedding } = await embed({
 You can use the object format with explicit image property.
 
 ```ts
-import { voyage } from '@ai-sdk/voyage';
+import { voyage } from 'voyage-ai-provider';
 import { embedMany } from 'ai';
 
 const { embeddings } = await embedMany({
@@ -143,7 +143,7 @@ const { embeddings } = await embedMany({
 You can combine multiple images into a single embedding by passing an array. This is useful for representing related images as a single vector.
 
 ```ts
-import { voyage } from '@ai-sdk/voyage';
+import { voyage } from 'voyage-ai-provider';
 import { embedMany } from 'ai';
 
 const { embeddings } = await embedMany({
@@ -166,7 +166,7 @@ console.log(`Generated ${embeddings.length} embedding(s)`);
 Generate multiple embeddings, each combining multiple images.
 
 ```ts
-import { voyage } from '@ai-sdk/voyage';
+import { voyage } from 'voyage-ai-provider';
 import { embedMany } from 'ai';
 
 const { embeddings } = await embedMany({
@@ -194,9 +194,9 @@ console.log(`Generated ${embeddings.length} embeddings`);
 You can customize the embedding behavior using provider-specific options.
 
 ```ts
-import { voyage } from '@ai-sdk/voyage';
+import { voyage } from 'voyage-ai-provider';
 import { embed } from 'ai';
-import type { VoyageMultimodalEmbeddingOptions } from '@ai-sdk/voyage';
+import type { VoyageMultimodalEmbeddingOptions } from 'voyage-ai-provider';
 
 const { embedding } = await embed({
   model: voyage.imageEmbeddingModel('voyage-multimodal-3'),

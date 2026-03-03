@@ -22,9 +22,9 @@ Multimodal embeddings create a shared semantic space where text and images with 
 Create an embedding from text and image combined:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embed } from 'ai';
-import type { MultimodalEmbeddingInput } from '@ai-sdk/voyage';
+import type { MultimodalEmbeddingInput } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: process.env.VOYAGE_API_KEY,
@@ -54,9 +54,9 @@ The multimodal model accepts several input formats for maximum flexibility:
 Combine textual descriptions with visual content:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embedMany } from 'ai';
-import type { MultimodalEmbeddingInput } from '@ai-sdk/voyage';
+import type { MultimodalEmbeddingInput } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: process.env.VOYAGE_API_KEY,
@@ -82,9 +82,9 @@ const { embeddings } = await embedMany<MultimodalEmbeddingInput>({
 You can use the multimodal model for text alone:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embedMany } from 'ai';
-import type { MultimodalEmbeddingInput } from '@ai-sdk/voyage';
+import type { MultimodalEmbeddingInput } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: process.env.VOYAGE_API_KEY,
@@ -109,9 +109,9 @@ const { embeddings } = await embedMany<MultimodalEmbeddingInput>({
 Generate embeddings from images without text:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embedMany } from 'ai';
-import type { MultimodalEmbeddingInput } from '@ai-sdk/voyage';
+import type { MultimodalEmbeddingInput } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: process.env.VOYAGE_API_KEY,
@@ -141,9 +141,9 @@ Combine multiple text segments and images into a single embedding:
 Pair descriptive text with several related images:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embedMany } from 'ai';
-import type { MultimodalEmbeddingInput } from '@ai-sdk/voyage';
+import type { MultimodalEmbeddingInput } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: process.env.VOYAGE_API_KEY,
@@ -170,9 +170,9 @@ console.log('Generated embedding from 1 text + 2 images');
 Create detailed embeddings with both modalities:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embedMany } from 'ai';
-import type { MultimodalEmbeddingInput } from '@ai-sdk/voyage';
+import type { MultimodalEmbeddingInput } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: process.env.VOYAGE_API_KEY,
@@ -204,9 +204,9 @@ for (const [index, embedding] of embeddings.entries()) {
 The multimodal model also supports grouping multiple text segments:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embedMany } from 'ai';
-import type { TextEmbeddingInput } from '@ai-sdk/voyage';
+import type { TextEmbeddingInput } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: process.env.VOYAGE_API_KEY,
@@ -241,9 +241,9 @@ Grouping related content creates richer semantic representations than embedding 
 Customize multimodal embedding behavior:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embed } from 'ai';
-import type { MultimodalEmbeddingInput, VoyageMultimodalEmbeddingOptions } from '@ai-sdk/voyage';
+import type { MultimodalEmbeddingInput, VoyageMultimodalEmbeddingOptions } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: process.env.VOYAGE_API_KEY,
@@ -319,9 +319,9 @@ When `true`, long inputs are automatically truncated. When `false`, an error is 
 One of the most powerful features is searching across modalities:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embed, embedMany } from 'ai';
-import type { MultimodalEmbeddingInput, VoyageMultimodalEmbeddingOptions } from '@ai-sdk/voyage';
+import type { MultimodalEmbeddingInput, VoyageMultimodalEmbeddingOptions } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: process.env.VOYAGE_API_KEY,
@@ -381,9 +381,9 @@ Use `inputType: 'query'` for search queries and `inputType: 'document'` for inde
 Convert and embed images from various sources:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embed } from 'ai';
-import type { MultimodalEmbeddingInput } from '@ai-sdk/voyage';
+import type { MultimodalEmbeddingInput } from 'voyage-ai-provider';
 
 // Helper to convert image URL to base64
 const getBase64Image = async (url: string) => {
@@ -413,9 +413,9 @@ console.log('Embedded base64 image with text');
 Multimodal embeddings track both text and image token usage:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embedMany } from 'ai';
-import type { MultimodalEmbeddingInput } from '@ai-sdk/voyage';
+import type { MultimodalEmbeddingInput } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: process.env.VOYAGE_API_KEY,
@@ -444,9 +444,9 @@ Total tokens include both text tokens and image pixels converted to token equiva
 Handle errors gracefully with multimodal inputs:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embed } from 'ai';
-import type { MultimodalEmbeddingInput } from '@ai-sdk/voyage';
+import type { MultimodalEmbeddingInput } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: process.env.VOYAGE_API_KEY,
@@ -498,7 +498,7 @@ Ensure text descriptions complement images rather than duplicate information, cr
 Choose the right model method based on your input:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: process.env.VOYAGE_API_KEY,

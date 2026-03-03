@@ -10,7 +10,7 @@ Configure the Voyage AI provider to customize API endpoints, authentication, req
 Create a Voyage AI provider instance with your configuration:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: process.env.VOYAGE_API_KEY,
@@ -34,7 +34,7 @@ export VOYAGE_API_KEY="your-api-key-here"
 The provider automatically reads from `VOYAGE_API_KEY`:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 
 const voyage = createVoyage();
 // API key loaded from VOYAGE_API_KEY environment variable
@@ -45,7 +45,7 @@ const voyage = createVoyage();
 Pass the API key directly when creating the provider:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: 'your-api-key-here',
@@ -67,7 +67,7 @@ Customize the provider with these settings:
 Override the default API endpoint:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: process.env.VOYAGE_API_KEY,
@@ -92,7 +92,7 @@ The default is `https://api.voyageai.com/v1`.
 Add custom headers to all API requests:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: process.env.VOYAGE_API_KEY,
@@ -112,7 +112,7 @@ Custom headers are included in every request to the Voyage AI API.
 Provide a custom fetch implementation:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: process.env.VOYAGE_API_KEY,
@@ -142,7 +142,7 @@ Use a custom fetch implementation to:
 Combine all settings for full control:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: process.env.VOYAGE_API_KEY,
@@ -179,9 +179,9 @@ Each model type accepts specific provider options:
 Configure text embedding behavior:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embed } from 'ai';
-import type { VoyageEmbeddingOptions } from '@ai-sdk/voyage';
+import type { VoyageEmbeddingOptions } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: process.env.VOYAGE_API_KEY,
@@ -217,9 +217,9 @@ const { embedding } = await embed({
 Configure multimodal embedding behavior:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { embed } from 'ai';
-import type { MultimodalEmbeddingInput, VoyageMultimodalEmbeddingOptions } from '@ai-sdk/voyage';
+import type { MultimodalEmbeddingInput, VoyageMultimodalEmbeddingOptions } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: process.env.VOYAGE_API_KEY,
@@ -256,9 +256,9 @@ const { embedding } = await embed<MultimodalEmbeddingInput>({
 Configure reranking behavior:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 import { rerank } from 'ai';
-import type { VoyageRerankingOptions } from '@ai-sdk/voyage';
+import type { VoyageRerankingOptions } from 'voyage-ai-provider';
 
 const voyage = createVoyage({
   apiKey: process.env.VOYAGE_API_KEY,
@@ -292,7 +292,7 @@ const result = await rerank({
 Use the pre-configured default instance:
 
 ```typescript
-import { voyage } from '@ai-sdk/voyage';
+import { voyage } from 'voyage-ai-provider';
 import { embed } from 'ai';
 
 // Uses VOYAGE_API_KEY environment variable
@@ -311,7 +311,7 @@ The default `voyage` instance reads configuration from environment variables and
 Create separate instances for different configurations:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 
 // Production instance
 const voyageProduction = createVoyage({
@@ -344,7 +344,7 @@ const voyage = process.env.NODE_ENV === 'production'
 Manage configuration across environments:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 
 interface Config {
   apiKey: string;
@@ -385,7 +385,7 @@ const voyage = createVoyage({
 Implement request/response interceptors:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 
 interface RequestMetrics {
   url: string;
@@ -437,7 +437,7 @@ setInterval(() => {
 Implement automatic retries for failed requests:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 
 async function fetchWithRetry(
   url: RequestInfo,
@@ -482,7 +482,7 @@ Use exponential backoff when implementing retry logic to avoid overwhelming the 
 Configure the provider for testing:
 
 ```typescript
-import { createVoyage } from '@ai-sdk/voyage';
+import { createVoyage } from 'voyage-ai-provider';
 
 // Mock fetch for testing
 const mockFetch = async (url: RequestInfo, options?: RequestInit) => {
